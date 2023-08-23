@@ -101,3 +101,21 @@ class MissingBodyParameterException extends CustomException
 		return "MISSING BODY PARAMETER";
 	}
 }
+
+class MissingObjectPropertyException extends CustomException
+{
+	protected $statusCode = 400;
+	protected function getMsg()
+	{
+		return "MISSING_OBJECT_PROPERTY";
+	}
+}
+
+class WrongObjectPropertyTypeException extends CustomException
+{
+	protected $statusCode = 400;
+	protected function getMsg()
+	{
+		return "WRONG_OBJECT_PROPERTY_TYPE";
+	}
+}
