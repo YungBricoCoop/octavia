@@ -62,6 +62,7 @@ class Utils
 		$object = (object) $object;
 		$className = str_starts_with($className, "?") ? substr($className, 1) : $className;
 
+
 		/* 		if (!class_exists($className)) {
 			throw new \InvalidArgumentException("UNKNOWN_CLASS $className");
 			return false;
@@ -118,11 +119,9 @@ class Utils
 				return false;
 			} */
 
-			if (!self::validate($object->$proprety_name, $expected_type)) {
-				$result["is_wrong_type"] = true;
-				$result["expected_type"] = $expected_type;
-				$result["actual_type"] = $actualType;
-				return $result;
+			$subResult = self::validate($object->$proprety_name, $expected_type);
+			if ($subResult["is_missing"] || $subResult["is_wrong_type"]) {
+				return $subResult;
 			}
 
 			continue;
