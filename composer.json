@@ -3,11 +3,12 @@
     "description": "A Slim Framework to use as a base for your projects",
     "type": "library",
     "require": {
-        "php": "^7.4|^8.1"
+        "php": "^7.4|^8.1",
+        "monolog/monolog": "^3.4"
     },
     "autoload": {
         "psr-4": {
-            "Vendor\\YbcFramework\\": "src/"	
+            "Vendor\\YbcFramework\\": "src/"
         }
     },
     "require-dev": {

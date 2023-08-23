@@ -7,6 +7,7 @@ require_once "Exceptions.php";
 use CustomException, ForbiddenException, UnauthorizedException, MethodNotAllowedException, NotFoundException, ConflictException, InternalServerErrorException;
 use Vendor\YbcFramework\Enums\HTTPMethods;
 use Vendor\YbcFramework\Utils;
+use Vendor\YbcFramework\Log;
 
 
 /**
@@ -24,6 +25,7 @@ class RequestHandler
 	private $endpoints = [];
 	private $user = [];
 	private $cors_origin = "";
+	public $logger = null;
 
 	/**
 	 * Create a new RequestHandler
@@ -31,6 +33,7 @@ class RequestHandler
 	 */
 	public function __construct($user = [], $cors_origin = "")
 	{
+		$this->logger = new Log("RequestHandlerLogger");
 		$this->user = $user;
 		$this->cors_origin = $cors_origin;
 	}
@@ -69,9 +72,15 @@ class RequestHandler
 		try {
 			$this->handle_request_with_exception();
 		} catch (CustomException $e) {
+			if ($e->getDetail()) {
+				$this->logger->error($e->getMessage() . "(" . $e->getDetail() . ")", $e->getTrace());
+				Utils::response(null, $e->getMessage(), $e->getStatusCode());
+			}
+			
+			$this->logger->error($e->getMessage(), $e->getTrace());
 			Utils::response(null, $e->getMessage(), $e->getStatusCode());
-		}
-		catch (\Exception $e) {
+		} catch (\Exception $e) {
+			$this->logger->log("ERROR", $e->getMessage(), $e->getTrace());
 			Utils::response(null, "INTERNAL_SERVER_ERROR", 500);
 		}
 	}
@@ -88,7 +97,9 @@ class RequestHandler
 		$endpoint_name = $_GET["endpoint"] ?? "";
 		$endpoint_name = Utils::endpoint_to_function_name($endpoint_name);
 		$method = $_SERVER["REQUEST_METHOD"] ?? "GET";
-		//info("[$method] /$endpoint_name ($ip)"); //TODO: Implement logging
+
+		$this->logger->log("INFO", "[$method] /$endpoint_name ($ip)");
+
 		$endpoint_name = $method . "_" . $endpoint_name;
 
 		// check if the endpoint exists and if the method is allowed
