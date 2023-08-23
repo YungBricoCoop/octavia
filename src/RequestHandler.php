@@ -2,6 +2,15 @@
 
 namespace Vendor\YbcFramework;
 
+use Vendor\YbcFramework\Enums\HTTPMethods;
+
+/**
+ * @method get(string $route, callable $callback = null)
+ * @method post(string $route, callable $callback = null)
+ * @method put(string $route, callable $callback = null)
+ * @method delete(string $route, callable $callback = null)
+ * @method patch(string $route, callable $callback = null)
+ */
 class RequestHandler
 {
 	private $endpoints = [];
@@ -16,6 +25,28 @@ class RequestHandler
 	{
 		$this->user = $user;
 		$this->cors_origin = $cors_origin;
+	}
+
+	public function __call($name, $arguments)
+	{
+		$httpMethods = array_column(HTTPMethods::cases(), 'name');
+		$httpMethod = strtoupper($name);
+		// check if the method is allowed, by key
+		if (!in_array($httpMethod, $httpMethods)) {
+			return;
+		}
+
+		$func = $arguments[1] ?? null;
+
+		// register the endpoint
+		$this->endpoints[$httpMethod . "_" . $arguments[0]] = [
+			"method" => $httpMethod,
+			"func" => $func,
+			"requires_login" => false,
+			"requires_admin" => false,
+			"required_params" => [],
+			"required_body" => []
+		];
 	}
 
 	/**
@@ -71,6 +102,12 @@ class RequestHandler
 			send_response("METHOD_NOT_ALLOWED", true, 405);
 		} */
 
+		if (!isset($this->endpoints[$endpoint_name])) {
+			//send_response("NOT_FOUND", true, 404); //TODO: Implement send_responsee
+			return;
+		}
+
+
 		// get the endpoint
 		$endpoint = $this->endpoints[$endpoint_name];
 
@@ -93,7 +130,7 @@ class RequestHandler
 
 		// call the endpoint function
 		// each endpoint function is named api_<endpoint_name> for avoiding name conflicts
-		$endpoint_function = $endpoint_name;
+		$endpoint_function = isset($endpoint["func"]) ? $endpoint["func"] : $endpoint_name;
 		$endpoint_function($params, $body, $this->user);
 	}
 
