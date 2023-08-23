@@ -2,8 +2,12 @@
 
 namespace Vendor\YbcFramework;
 
+require_once "Exceptions.php";
+
+use CustomException, ForbiddenException, UnauthorizedException, MethodNotAllowedException, NotFoundException, ConflictException, InternalServerErrorException;
 use Vendor\YbcFramework\Enums\HTTPMethods;
 use Vendor\YbcFramework\Utils;
+
 
 /**
  * @method Endpoint get(string $route, callable $callback = null)
@@ -62,7 +66,18 @@ class RequestHandler
 	 */
 	public function handle_request()
 	{
+		try {
+			$this->handle_request_with_exception();
+		} catch (CustomException $e) {
+			Utils::response(null, $e->getMessage(), $e->getStatusCode());
+		}
+		catch (\Exception $e) {
+			Utils::response(null, "INTERNAL_SERVER_ERROR", 500);
+		}
+	}
 
+	private function handle_request_with_exception()
+	{
 		// handle cors
 		if ($this->cors_origin) $this->handle_cors();
 
@@ -78,13 +93,12 @@ class RequestHandler
 
 		// check if the endpoint exists and if the method is allowed
 		if (!isset($this->endpoints[$endpoint_name])) {
-			//send_response("NOT_FOUND", true, 404); //TODO: Implement send_responsee
-			return;
+			throw new NotFoundException();
 		}
 
-		/* if ($method != $this->endpoints[$endpoint_name]["http_method"]) {
-			send_response("METHOD_NOT_ALLOWED", true, 405);
-		} */
+		if ($method != $this->endpoints[$endpoint_name]->http_method) {
+			throw new MethodNotAllowedException();
+		}
 
 
 		// get the endpoint
@@ -97,14 +111,11 @@ class RequestHandler
 
 		// check if the user is logged in and if the user is allowed to access the endpoint
 		if ($endpoint->requires_login && !$this->user) {
-			//error("UNAUTHORIZED"); //TODO: Implement logging
-			//send_response("UNAUTHORIZED", true, 403); //TODO: Implement send_responsee
+			throw new UnauthorizedException();
 		}
 
 		if ($endpoint->requires_admin && !$this->user["is_admin"]) {
-			$ip = $_SERVER["REMOTE_ADDR"] ?? "unknown";
-			//error("FORBIDDEN"); //TODO: Implement logging
-			//send_response("FORBIDDEN", true, 403); //TODO: Implement send_responsee
+			throw new ForbiddenException();
 		}
 
 		// call the endpoint function
@@ -124,7 +135,7 @@ class RequestHandler
 
 		header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 		header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
-		//send_response("OK"); //TODO: Implement send_responsee
+		Utils::response("OK");
 	}
 
 	public function get_endpoints()

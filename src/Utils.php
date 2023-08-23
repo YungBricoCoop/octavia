@@ -19,4 +19,28 @@ class Utils
 		}
 		return $endpoint;
 	}
+
+	/**
+	 * Send a response
+	 * @param mixed $data The data to send
+	 * @param mixed $error The error to send
+	 * @param int $status The status code to send
+	 * @return void
+	 */
+	public static function response($data, $error = false, $status = 200)
+	{
+		$response = [
+			"data" => $data,
+		];
+		
+		// only include the error key if there is an error
+		if ($error) {
+			$response["error"] = $error;
+		}
+		
+		http_response_code($status);
+		header('Content-Type: application/json');
+		echo json_encode($response);
+		exit;
+	}
 }
