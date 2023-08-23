@@ -1,0 +1,16 @@
+{
+    "name": "vendor/ybc-framework",
+    "description": "A Slim Framework to use as a base for your projects",
+    "type": "library",
+    "require": {
+        "php": "^7.4|^8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Vendor\\YbcFramework\\": "src/"	
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    }
+}
