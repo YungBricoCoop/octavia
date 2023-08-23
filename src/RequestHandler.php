@@ -3,17 +3,17 @@
 namespace Vendor\YbcFramework;
 
 use Vendor\YbcFramework\Enums\HTTPMethods;
-
+use Vendor\YbcFramework\Utils;
 /**
- * @method get(string $route, callable $callback = null)
- * @method post(string $route, callable $callback = null)
- * @method put(string $route, callable $callback = null)
- * @method delete(string $route, callable $callback = null)
- * @method patch(string $route, callable $callback = null)
+ * @method Endpoint get(string $route, callable $callback = null)
+ * @method Endpoint post(string $route, callable $callback = null)
+ * @method Endpoint put(string $route, callable $callback = null)
+ * @method Endpoint delete(string $route, callable $callback = null)
+ * @method Endpoint patch(string $route, callable $callback = null)
  */
 class RequestHandler
 {
-	private $endpoints = [];
+	public $endpoints = [];
 	private $user = [];
 	private $cors_origin = "";
 
@@ -39,7 +39,11 @@ class RequestHandler
 		$func = $arguments[1] ?? null;
 
 		// register the endpoint
-		$this->endpoints[$httpMethod . "_" . $arguments[0]] = [
+		$endpoint_name = $arguments[0];
+		$endpoint_name = Utils::endpoint_to_function_name($endpoint_name);
+		$key = $httpMethod . "_" . $endpoint_name;
+
+		$this->endpoints[$key] = [
 			"method" => $httpMethod,
 			"func" => $func,
 			"requires_login" => false,
@@ -47,28 +51,8 @@ class RequestHandler
 			"required_params" => [],
 			"required_body" => []
 		];
-	}
 
-	/**
-	 * Register an endpoint
-	 * 
-	 * @param string $name The name of the endpoint
-	 * @param bool $requires_login Whether the endpoint requires the user to be logged in
-	 * @param array $allowed_groups An array of groups that are allowed to access the endpoint
-	 */
-	public function register_endpoint($name, $method, $requires_login = false, $requires_admin = false, $required_params = [], $required_body = [])
-	{
-		if (isset($this->endpoints[$method . "_" . $name])) {
-			//send_response("ERROR", true, 500); //TODO: Implement logging
-		}
-
-		$this->endpoints[$method . "_" . $name] = [
-			"method" => $method,
-			"requires_login" => $requires_login,
-			"requires_admin" => $requires_admin,
-			"required_params" => $required_params,
-			"required_body" => $required_body
-		];
+		return new Endpoint($this, $key);
 	}
 
 	/**
@@ -89,6 +73,7 @@ class RequestHandler
 
 		// get the endpoint name and method
 		$endpoint_name = $_GET["endpoint"] ?? "";
+		$endpoint_name = Utils::endpoint_to_function_name($endpoint_name);
 		$method = $_SERVER["REQUEST_METHOD"] ?? "GET";
 		//info("[$method] /$endpoint_name ($ip)"); //TODO: Implement logging
 		$endpoint_name = $method . "_" . $endpoint_name;
@@ -129,7 +114,6 @@ class RequestHandler
 		}
 
 		// call the endpoint function
-		// each endpoint function is named api_<endpoint_name> for avoiding name conflicts
 		$endpoint_function = isset($endpoint["func"]) ? $endpoint["func"] : $endpoint_name;
 		$endpoint_function($params, $body, $this->user);
 	}
