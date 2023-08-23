@@ -129,6 +129,9 @@ class RequestHandler
 			throw new ForbiddenException();
 		}
 
+		// validate the query and body
+		$body->validate();
+
 		// call the endpoint function
 		$endpoint_function = isset($endpoint->func) ? $endpoint->func : $endpoint_name;
 		$endpoint_function($query, $body, $this->user);
