@@ -93,6 +93,15 @@ class MissingQueryParameterException extends CustomException
 	}
 }
 
+class WrongQueryParameterTypeException extends CustomException
+{
+	protected $statusCode = 400;
+	protected function getMsg()
+	{
+		return "WRONG_QUERY_PARAMETER_TYPE";
+	}
+}
+
 class MissingBodyParameterException extends CustomException
 {
 	protected $statusCode = 400;

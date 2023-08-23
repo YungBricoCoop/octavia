@@ -35,6 +35,7 @@ class Body
 			}
 		}
 
+		//FIXME: This might not work with mixed arrays, or with simple arrays
 		foreach ($required as $key => $value) {
 
 			// If the key does not exist in the data array, throw an exception

@@ -76,7 +76,7 @@ class RequestHandler
 				$this->logger->error($e->getMessage() . "(" . $e->getDetail() . ")", $e->getTrace());
 				Utils::response(null, $e->getMessage(), $e->getStatusCode());
 			}
-			
+
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			Utils::response(null, $e->getMessage(), $e->getStatusCode());
 		} catch (\Exception $e) {
@@ -130,6 +130,7 @@ class RequestHandler
 		}
 
 		// validate the query and body
+		$query->validate();
 		$body->validate();
 
 		// call the endpoint function

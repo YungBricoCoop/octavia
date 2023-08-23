@@ -39,6 +39,9 @@ class Endpoint
 
 	/**
 	 * Set the required params
+	 * @param array|string $params
+	 * Accepts an array of strings or a string (class)
+	 *  @return Endpoint
 	 */
 	public function query($params)
 	{
@@ -48,6 +51,7 @@ class Endpoint
 
 	/**
 	 * Set the required  params
+	 *  @return Endpoint
 	 */
 	public function q($params)
 	{
@@ -57,6 +61,10 @@ class Endpoint
 
 	/**
 	 * Set the required body params
+	 * @param array|string $params
+	 * Accepts an array of strings and assocative string => string arrays or a string (class)
+	 * Ex : ["info", "user" => User::class] or directly User::class
+	 * @return Endpoint
 	 */
 	public function body($params)
 	{
@@ -66,6 +74,7 @@ class Endpoint
 
 	/**
 	 * Set the required body params
+	 *  @return Endpoint
 	 */
 	public function b($params)
 	{
@@ -75,6 +84,7 @@ class Endpoint
 
 	/**
 	 * Callback function
+	 *  @return Endpoint
 	 */
 	public function f($func)
 	{
