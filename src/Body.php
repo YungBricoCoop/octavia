@@ -2,6 +2,8 @@
 
 namespace Vendor\YbcFramework;
 
+use MissingBodyParameterException;
+
 class Body
 {
 	private $data = [];
@@ -21,7 +23,7 @@ class Body
 	{
 
 		if (!array_key_exists($key, $this->data) && in_array($key, $this->required_body)) {
-			//TODO: Throw custom exception
+			throw new MissingBodyParameterException($key);
 		}
 		return $this->data[$key] ?? null;
 	}

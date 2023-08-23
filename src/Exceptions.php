@@ -26,7 +26,7 @@ class CustomException extends Exception
 
 	protected function getMsg()
 	{
-		return "CUSTOM EXCEPTION";
+		return "CUSTOM_EXCEPTION";
 	}
 }
 
@@ -53,7 +53,7 @@ class NotFoundException extends CustomException
 	protected $statusCode = 404;
 	protected function getMsg()
 	{
-		return "NOT FOUND";
+		return "NOT_FOUND";
 	}
 }
 
@@ -62,7 +62,7 @@ class MethodNotAllowedException extends CustomException
 	protected $statusCode = 405;
 	protected function getMsg()
 	{
-		return "METHOD NOT ALLOWED";
+		return "METHOD_NOT_ALLOWED";
 	}
 }
 
@@ -80,6 +80,24 @@ class InternalServerErrorException extends CustomException
 	protected $statusCode = 500;
 	protected function getMsg()
 	{
-		return "INTERNAL SERVER ERROR";
+		return "INTERNAL_SERVERERROR";
+	}
+}
+
+class MissingQueryParameterException extends CustomException
+{
+	protected $statusCode = 400;
+	protected function getMsg()
+	{
+		return "MISSING_QUERY_PARAMETER";
+	}
+}
+
+class MissingBodyParameterException extends CustomException
+{
+	protected $statusCode = 400;
+	protected function getMsg()
+	{
+		return "MISSING BODY PARAMETER";
 	}
 }

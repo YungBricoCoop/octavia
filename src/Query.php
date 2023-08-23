@@ -2,6 +2,8 @@
 
 namespace Vendor\YbcFramework;
 
+use MissingQueryParameterException;
+
 class Query
 {
 	private $data = [];
@@ -20,7 +22,7 @@ class Query
 	public function __get($key)
 	{
 		if (!array_key_exists($key, $this->data) && in_array($key, $this->required_params)) {
-			//TODO: Throw custom exception
+			throw new MissingQueryParameterException($key);
 		}
 		return $this->data[$key] ?? null;
 	}
