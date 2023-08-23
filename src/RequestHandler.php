@@ -4,6 +4,7 @@ namespace Vendor\YbcFramework;
 
 use Vendor\YbcFramework\Enums\HTTPMethods;
 use Vendor\YbcFramework\Utils;
+
 /**
  * @method Endpoint get(string $route, callable $callback = null)
  * @method Endpoint post(string $route, callable $callback = null)
@@ -13,7 +14,10 @@ use Vendor\YbcFramework\Utils;
  */
 class RequestHandler
 {
-	public $endpoints = [];
+	/**
+	 * @var Endpoint[]
+	 */
+	private $endpoints = [];
 	private $user = [];
 	private $cors_origin = "";
 
@@ -29,10 +33,10 @@ class RequestHandler
 
 	public function __call($name, $arguments)
 	{
-		$httpMethods = array_column(HTTPMethods::cases(), 'name');
-		$httpMethod = strtoupper($name);
+		$http_methods = array_column(HTTPMethods::cases(), 'name');
+		$http_method = strtoupper($name);
 		// check if the method is allowed, by key
-		if (!in_array($httpMethod, $httpMethods)) {
+		if (!in_array($http_method, $http_methods)) {
 			return;
 		}
 
@@ -41,18 +45,12 @@ class RequestHandler
 		// register the endpoint
 		$endpoint_name = $arguments[0];
 		$endpoint_name = Utils::endpoint_to_function_name($endpoint_name);
-		$key = $httpMethod . "_" . $endpoint_name;
+		$key = $http_method . "_" . $endpoint_name;
 
-		$this->endpoints[$key] = [
-			"method" => $httpMethod,
-			"func" => $func,
-			"requires_login" => false,
-			"requires_admin" => false,
-			"required_params" => [],
-			"required_body" => []
-		];
+		$endpoint = new Endpoint($http_method, $endpoint_name, $func);
+		$this->endpoints[$key] = $endpoint;
 
-		return new Endpoint($this, $key);
+		return $endpoint;
 	}
 
 	/**
@@ -81,41 +79,37 @@ class RequestHandler
 		// check if the endpoint exists and if the method is allowed
 		if (!isset($this->endpoints[$endpoint_name])) {
 			//send_response("NOT_FOUND", true, 404); //TODO: Implement send_responsee
-		}
-
-		/* if ($method != $this->endpoints[$endpoint_name]["method"]) {
-			send_response("METHOD_NOT_ALLOWED", true, 405);
-		} */
-
-		if (!isset($this->endpoints[$endpoint_name])) {
-			//send_response("NOT_FOUND", true, 404); //TODO: Implement send_responsee
 			return;
 		}
+
+		/* if ($method != $this->endpoints[$endpoint_name]["http_method"]) {
+			send_response("METHOD_NOT_ALLOWED", true, 405);
+		} */
 
 
 		// get the endpoint
 		$endpoint = $this->endpoints[$endpoint_name];
 
 		// build the query and body objects
-		$params = new Query($_GET, $endpoint["required_params"]);
+		$query = new Query($_GET, $endpoint->required_query_params);
 		$body = file_get_contents("php://input");
-		$body = new Body(json_decode($body, true), $endpoint["required_body"]);
+		$body = new Body(json_decode($body, true), $endpoint->required_body_params);
 
 		// check if the user is logged in and if the user is allowed to access the endpoint
-		if ($endpoint["requires_login"] && !$this->user) {
+		if ($endpoint->requires_login && !$this->user) {
 			//error("UNAUTHORIZED"); //TODO: Implement logging
 			//send_response("UNAUTHORIZED", true, 403); //TODO: Implement send_responsee
 		}
 
-		if ($endpoint["requires_admin"] && !$this->user["is_admin"]) {
+		if ($endpoint->requires_admin && !$this->user["is_admin"]) {
 			$ip = $_SERVER["REMOTE_ADDR"] ?? "unknown";
 			//error("FORBIDDEN"); //TODO: Implement logging
 			//send_response("FORBIDDEN", true, 403); //TODO: Implement send_responsee
 		}
 
 		// call the endpoint function
-		$endpoint_function = isset($endpoint["func"]) ? $endpoint["func"] : $endpoint_name;
-		$endpoint_function($params, $body, $this->user);
+		$endpoint_function = isset($endpoint->func) ? $endpoint->func : $endpoint_name;
+		$endpoint_function($query, $body, $this->user);
 	}
 
 	public function handle_cors()

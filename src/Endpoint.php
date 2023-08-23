@@ -4,21 +4,27 @@ namespace Vendor\YbcFramework;
 
 class Endpoint
 {
-	private $parent;
-	private $key;
+	public $http_method = null;
+	public $name = null;
+	public $func = null;
+	public $requires_login = false;
+	public $requires_admin = false;
+	public $required_query_params = [];
+	public $required_body_params = [];
 
-	public function __construct($parent, $key)
+	public function __construct($http_method, $name, $func)
 	{
-		$this->parent = $parent;
-		$this->key = $key;
+		$this->http_method = $http_method;
+		$this->func = $func;
 	}
+
 
 	/**
 	 * Need to be logged in to access this endpoint
 	 */
 	public function login()
 	{
-		$this->parent->endpoints[$this->key]['requires_login'] = true;
+		$this->requires_login = true;
 		return $this;
 	}
 
@@ -27,7 +33,7 @@ class Endpoint
 	 */
 	public function admin()
 	{
-		$this->parent->endpoints[$this->key]['requires_admin'] = true;
+		$this->requires_admin = true;
 		return $this;
 	}
 
@@ -36,7 +42,7 @@ class Endpoint
 	 */
 	public function query($params)
 	{
-		$this->parent->endpoints[$this->key]['required_params'] = $params;
+		$this->required_query_params = $params;
 		return $this;
 	}
 
@@ -45,7 +51,7 @@ class Endpoint
 	 */
 	public function q($params)
 	{
-		$this->parent->endpoints[$this->key]['required_params'] = $params;
+		$this->required_query_params = $params;
 		return $this;
 	}
 
@@ -54,7 +60,7 @@ class Endpoint
 	 */
 	public function body($params)
 	{
-		$this->parent->endpoints[$this->key]['required_body'] = $params;
+		$this->required_body_params = $params;
 		return $this;
 	}
 
@@ -63,7 +69,7 @@ class Endpoint
 	 */
 	public function b($params)
 	{
-		$this->parent->endpoints[$this->key]['required_body'] = $params;
+		$this->required_body_params = $params;
 		return $this;
 	}
 
@@ -72,7 +78,12 @@ class Endpoint
 	 */
 	public function f($func)
 	{
-		$this->parent->endpoints[$this->key]['func'] = $func;
+		$this->func = $func;
 		return $this;
+	}
+
+	public function __toString()
+	{
+		return $this->http_method . "_" . $this->func;
 	}
 }
