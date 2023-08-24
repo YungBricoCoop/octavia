@@ -4,21 +4,6 @@ namespace Vendor\YbcFramework;
 
 class Utils
 {
-	/**
-	 * Convert an endpoint to a function name
-	 * For example: /api/v1/users/1 => api_v1_users_1
-	 * @param string $endpoint
-	 * @return string
-	 */
-	public static function endpoint_to_function_name($endpoint)
-	{
-		$endpoint = str_replace('/', '_', $endpoint);
-		$endpoint = str_replace('-', '_', $endpoint);
-		if (substr($endpoint, 0, 1) === '_') {
-			$endpoint = substr($endpoint, 1);
-		}
-		return $endpoint;
-	}
 
 	/**
 	 * Send a response
@@ -128,5 +113,41 @@ class Utils
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Convert an endpoint to a function name
+	 * For example: /api/v1/users/1 => api_v1_users_1
+	 * @param string $path
+	 * @return string
+	 */
+	public static function get_endpoint_name($path)
+	{
+		$path = str_replace('/', '_', $path);
+		$path = str_replace('-', '_', $path);
+		if (substr($path, 0, 1) === '_') {
+			$path = substr($path, 1);
+		}
+		return $path;
+	}
+
+	/**
+	 * Get all the segments of an endpoint
+	 * @param string $endpoint
+	 * @return array
+	 * @example /api/v1/{user}/homepage => ["api", "v1", "{user}", "homepage"]
+	 */
+	public static function get_endpoints_path_segments($path)
+	{
+		// remove trailing slash if any
+		if (substr($path, -1) == "/") {
+			$path = substr($path, 0, -1);
+		}
+		// Split by slash
+		$segments = explode("/", $path);
+		$segments = array_filter($segments, function ($segment) {
+			return $segment != "";
+		});
+		return $segments;
 	}
 }

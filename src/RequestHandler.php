@@ -5,7 +5,9 @@ namespace Vendor\YbcFramework;
 require_once "Exceptions.php";
 
 use CustomException, ForbiddenException, UnauthorizedException, MethodNotAllowedException, NotFoundException, ConflictException, InternalServerErrorException;
+use Exception;
 use Vendor\YbcFramework\Enums\HTTPMethods;
+use Vendor\YbcFramework\Router;
 use Vendor\YbcFramework\Utils;
 use Vendor\YbcFramework\Log;
 
@@ -19,10 +21,8 @@ use Vendor\YbcFramework\Log;
  */
 class RequestHandler
 {
-	/**
-	 * @var Endpoint[]
-	 */
-	private $endpoints = [];
+
+	private $router = null;
 	private $user = [];
 	private $cors_origin = "";
 	public $logger = null;
@@ -33,6 +33,7 @@ class RequestHandler
 	 */
 	public function __construct($user = [], $cors_origin = "")
 	{
+		$this->router = new Router();
 		$this->logger = new Log("RequestHandlerLogger");
 		$this->user = $user;
 		$this->cors_origin = $cors_origin;
@@ -50,12 +51,17 @@ class RequestHandler
 		$func = $arguments[1] ?? null;
 
 		// register the endpoint
-		$endpoint_name = $arguments[0];
-		$endpoint_name = Utils::endpoint_to_function_name($endpoint_name);
-		$key = $http_method . "_" . $endpoint_name;
+		$name = Utils::get_endpoint_name($arguments[0]);
+		$path = $arguments[0];
+		$path_segments = Utils::get_endpoints_path_segments($path);
 
-		$endpoint = new Endpoint($http_method, $endpoint_name, $func);
-		$this->endpoints[$key] = $endpoint;
+		$endpoint = new Endpoint($name, $http_method, $path, $path_segments, $func);
+		try {
+			$this->router->register($endpoint);
+		} catch (Exception $e) {
+			$this->logger->error($e->getMessage(), $e->getTrace());
+			Utils::response(null, "INTERNAL_SERVER_ERROR", 500);
+		}
 
 		return $endpoint;
 	}
@@ -90,30 +96,19 @@ class RequestHandler
 		// handle cors
 		if ($this->cors_origin) $this->handle_cors();
 
-		// get the ip address
+		// get the request method and ip
+		$method = $_SERVER["REQUEST_METHOD"] ?? "GET";
 		$ip = $_SERVER["REMOTE_ADDR"] ?? "unknown";
 
-		// get the endpoint name and method
-		$endpoint_name = $_GET["endpoint"] ?? "";
-		$endpoint_name = Utils::endpoint_to_function_name($endpoint_name);
-		$method = $_SERVER["REQUEST_METHOD"] ?? "GET";
+		// route the request
+		$path = $_GET["endpoint"] ?? "";
+		$endpoint = $this->router->route($method, $path);
 
-		$this->logger->log("INFO", "[$method] /$endpoint_name ($ip)");
-
-		$endpoint_name = $method . "_" . $endpoint_name;
-
-		// check if the endpoint exists and if the method is allowed
-		if (!isset($this->endpoints[$endpoint_name])) {
+		if (!$endpoint) {
 			throw new NotFoundException();
 		}
 
-		if ($method != $this->endpoints[$endpoint_name]->http_method) {
-			throw new MethodNotAllowedException();
-		}
-
-
-		// get the endpoint
-		$endpoint = $this->endpoints[$endpoint_name];
+		$this->logger->log("INFO", "[$method] /$endpoint->path ($ip)");
 
 		// build the query and body objects
 		$query = new Query($_GET, $endpoint->required_query_params);
@@ -134,7 +129,7 @@ class RequestHandler
 		$body->validate();
 
 		// call the endpoint function
-		$endpoint_function = isset($endpoint->func) ? $endpoint->func : $endpoint_name;
+		$endpoint_function = isset($endpoint->func) ? $endpoint->func : $endpoint->name;
 		$endpoint_function($query, $body, $this->user);
 	}
 
@@ -151,11 +146,6 @@ class RequestHandler
 		header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 		header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
 		Utils::response("OK");
-	}
-
-	public function get_endpoints()
-	{
-		return $this->endpoints;
 	}
 
 	public function set_user($user)

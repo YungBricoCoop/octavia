@@ -4,17 +4,22 @@ namespace Vendor\YbcFramework;
 
 class Endpoint
 {
-	public $http_method = null;
 	public $name = null;
+	public $http_method = null;
+	public $path = null;
+	public $path_segments = null;
 	public $func = null;
 	public $requires_login = false;
 	public $requires_admin = false;
 	public $required_query_params = [];
 	public $required_body_params = [];
 
-	public function __construct($http_method, $name, $func)
+	public function __construct($name, $http_method, $path, $path_segments, $func)
 	{
+		$this->name = $name;
 		$this->http_method = $http_method;
+		$this->path = $path;
+		$this->path_segments = $path_segments;
 		$this->func = $func;
 	}
 
