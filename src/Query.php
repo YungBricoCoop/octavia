@@ -34,6 +34,7 @@ class Query
 			if ($result["is_wrong_type"]) {
 				throw new WrongQueryParameterTypeException($result["property"] . ", expected {" . $result["expected_type"] . "} but got {" . $result["actual_type"] . "}");
 			}
+			return true;
 		}
 
 		foreach ($required as $key) {
@@ -42,6 +43,7 @@ class Query
 				throw new MissingQueryParameterException($key);
 			}
 		}
+		return true;
 	}
 
 

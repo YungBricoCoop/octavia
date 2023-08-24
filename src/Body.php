@@ -37,15 +37,16 @@ class Body
 
 		//FIXME: This might not work with mixed arrays, or with simple arrays
 		foreach ($required as $key => $value) {
-
-			// If the key does not exist in the data array, throw an exception
-			if (!array_key_exists($key, $data)) {
-				throw new MissingBodyParameterException($key);
+			// Check if a class is passed as a string
+			if (is_string($value) && class_exists($value)) {
+				$this->validateProperty($data[$key], $value);
 			}
 
-			// Recursively validate if the required value is an array
-			if (is_array($value)) {
-				$this->validateProperty($data[$key], $value);
+			// If the key is an integer, it means that the value is a simple array
+			if (!is_int($key)) continue;
+
+			if (!array_key_exists($value, $data)) {
+				throw new MissingBodyParameterException($value);
 			}
 		}
 	}
