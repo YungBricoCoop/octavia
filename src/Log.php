@@ -39,7 +39,7 @@ class Log
 
 	private function initializeLogger()
 	{
-		$formatter = new LineFormatter($this->log_format, $this->date_format);
+		$formatter = new LineFormatter($this->log_format, $this->date_format, true, true);
 		$rotating_handler = new RotatingFileHandler($this->log_dir . DIRECTORY_SEPARATOR . $this->log_file, $this->max_files, $this->level);
 		$rotating_handler->setFormatter($formatter);
 
@@ -93,22 +93,22 @@ class Log
 	}
 
 
-	public function info($message, array $context = null)
+	public function info($message, array $context = [])
 	{
 		$this->logger->info($message, $context);
 	}
 
-	public function error($message, array $context = null)
+	public function error($message, array $context = [])
 	{
 		$this->logger->error($message, $context);
 	}
 
-	public function warning($message, array $context = null)
+	public function warning($message, array $context = [])
 	{
 		$this->logger->warning($message, $context);
 	}
 
-	public function debug($message, array $context = null)
+	public function debug($message, array $context = [])
 	{
 		$this->logger->debug($message, $context);
 	}
