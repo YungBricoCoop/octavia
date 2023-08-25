@@ -86,7 +86,7 @@ class RequestHandler
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			Utils::response(null, $e->getMessage(), $e->getStatusCode());
 		} catch (\Exception $e) {
-			$this->logger->log("ERROR", $e->getMessage(), $e->getTrace());
+			$this->logger->error($e->getMessage(), $e->getTrace());
 			Utils::response(null, "INTERNAL_SERVER_ERROR", 500);
 		}
 	}
@@ -108,7 +108,7 @@ class RequestHandler
 			throw new NotFoundException();
 		}
 
-		$this->logger->log("INFO", "[$method] /$endpoint->path ($ip)");
+		$this->logger->info("[$method] /$endpoint->path ($ip)");
 
 		// build the query and body objects
 		$query = new Query($_GET, $endpoint->required_query_params);

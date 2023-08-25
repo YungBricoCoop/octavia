@@ -4,135 +4,112 @@ namespace Vendor\YbcFramework;
 
 use Monolog\Logger;
 use Monolog\Handler\RotatingFileHandler;
-use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
+use \Monolog\Level;
 
 class Log
 {
-
 	private $logger;
-	public $level;
-	public $log_file;
-	public $log_format;
-	public $log_date_format;
 
+	private $name;
+	private $log_dir;
+	private $log_file;
+	private $date_format;
+	private $log_format;
+	private $level;
+	private $max_files;
 
-	/**
-	 * Initializes with an existing logger or creates a new one.
-	 *
-	 * @param Logger|null $logger
-	 */
-	public function __construct(?string $name = null, ?Logger $logger = null, ?string $level = null)
+	public function __construct($name_or_logger, $level = Level::Debug)
 	{
-		$this->level = $level ?? Logger::DEBUG;
-		$this->log_file =  __DIR__ . "/log.log";
+		$this->log_file = "app.log";
+		$this->date_format = "d-m-Y H:i:s";
 		$this->log_format = "[%level_name%] %datetime% : %message% %context% %extra%\n";
-		$this->log_date_format = 'd-m-Y H:i:s';
+		$this->level = $level;
+		$this->max_files = 7;
+		$this->log_dir = $this->getLogDir("logs");
 
-		$this->logger = $logger ?? new Logger($name ?? 'DEFAULT_LOGGER');
-		$this->logger->pushHandler(new StreamHandler($this->log_file, $level ?? Logger::DEBUG));
-		$this->setLogFormat($this->log_format, $this->log_date_format);
-	}
-
-	/**
-	 * Configures RotatingFileHandler.
-	 *
-	 * @param string $directory
-	 * @param string $name
-	 * @param int $maxFiles
-	 * @param int $level
-	 * @param bool $bubble
-	 * @param int $filePermission
-	 */
-	public function configureRotatingFileHandler(
-		string $directory,
-		string $name = 'log',
-		int $maxFiles = 0,
-		int $level = Logger::DEBUG,
-		bool $bubble = true,
-		int $filePermission = 0664
-	) {
-		$logFile = $directory . "/" . $name . ".log";
-		$rotatingHandler = new RotatingFileHandler($logFile, $maxFiles, $level, $bubble, $filePermission);
-		$this->logger->pushHandler($rotatingHandler);
-	}
-
-	/**
-	 * Configures the log format
-	 *
-	 * @param string $format
-	 * @param string $dateFormat
-	 */
-	public function setLogFormat(string $format, string $dateFormat)
-	{
-		$handlers = $this->logger->getHandlers();
-		$handler = end($handlers);
-		if ($handler) {
-			$this->log_format = $format;
-			$this->log_date_format = $dateFormat;
-
-			$formatter = new LineFormatter($format, $dateFormat, true, true);
-			$handler->setFormatter($formatter);
+		if ($name_or_logger instanceof Logger) {
+			$this->logger = $name_or_logger;
+		} else {
+			$this->name = $name_or_logger;
+			$this->logger = new Logger($this->name);
+			$this->initializeLogger();
 		}
 	}
 
-	/**
-	 * Configures the log level
-	 *
-	 * @param string $level
-	 */
-	public function setLogLevel(string $level)
+	private function initializeLogger()
 	{
-		$handler = end($this->logger->getHandlers());
-		if ($handler) {
-			$this->level = $level;
-			$handler->setLevel($level);
+		$formatter = new LineFormatter($this->log_format, $this->date_format);
+		$rotating_handler = new RotatingFileHandler($this->log_dir . DIRECTORY_SEPARATOR . $this->log_file, $this->max_files, $this->level);
+		$rotating_handler->setFormatter($formatter);
+
+		$this->logger->setHandlers([$rotating_handler]);
+	}
+
+	private function getLogDir($log_dir = null)
+	{
+		if (!Utils::is_path_absolute($log_dir)) {
+			return dirname($_SERVER["SCRIPT_FILENAME"]) . DIRECTORY_SEPARATOR . $log_dir;
+		} else {
+			return $log_dir;
 		}
 	}
 
-	/**
-	 * Configures filename format for the latest handler.
-	 *
-	 * @param string $filenameFormat
-	 * @param string $dateSuffix
-	 */
-	public function setFilenameFormat(string $filenameFormat, string $dateSuffix)
+	public function setLogDir($log_dir)
 	{
-		$handler = end($this->logger->getHandlers());
-		if ($handler && method_exists($handler, 'setFilenameFormat')) {
-			$handler->setFilenameFormat($filenameFormat, $dateSuffix);
-		}
+
+		$this->log_dir = $this->getLogDir($log_dir);
+		$this->initializeLogger();
 	}
 
-	/**
-	 * Logs a message.
-	 *
-	 * @param string $level
-	 * @param string $message
-	 * @param array $context
-	 */
-	public function log(string $level, string $message, array $context = [])
+	public function setLogFile($log_file)
 	{
-		$this->logger->log($level, $message, $context);
+		$this->log_file = $log_file;
+		$this->initializeLogger();
 	}
 
-	public function info(string $message, array $context = [])
+	public function setDateFormat($date_format)
 	{
-		$this->logger->log("INFO", $message, $context);
+		$this->date_format = $date_format;
+		$this->initializeLogger();
 	}
 
-	public function error(string $message, array $context = [])
+	public function setLogFormat($log_format)
 	{
-		$this->logger->log("ERROR", $message, $context);
+		$this->log_format = $log_format;
+		$this->initializeLogger();
 	}
 
-	public function warning(string $message, array $context = [])
+	public function setLevel($level)
 	{
-		$this->logger->log("WARNING", $message, $context);
+		$this->level = $level;
+		$this->initializeLogger();
 	}
 
-	public function debug(string $message, array $context = [])
+	public function setMaxFiles($max_files)
 	{
-		$this->logger->log("DEBUG", $message, $context);
+		$this->max_files = $max_files;
+		$this->initializeLogger();
+	}
+
+
+	public function info($message, array $context = null)
+	{
+		$this->logger->info($message, $context);
+	}
+
+	public function error($message, array $context = null)
+	{
+		$this->logger->error($message, $context);
+	}
+
+	public function warning($message, array $context = null)
+	{
+		$this->logger->warning($message, $context);
+	}
+
+	public function debug($message, array $context = null)
+	{
+		$this->logger->debug($message, $context);
 	}
 }

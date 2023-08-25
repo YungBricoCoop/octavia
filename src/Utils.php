@@ -150,4 +150,15 @@ class Utils
 		});
 		return $segments;
 	}
+
+	/**
+	 * Check if a path is absolute
+	 * @param string $path
+	 * @return bool
+	 */
+	public static function is_path_absolute($path)
+	{
+		return $path[0] === '/' || (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' && isset($path[1]) && $path[1] === ':');
+	}
 }
+ 
