@@ -39,6 +39,10 @@ class RequestHandler
 		$this->cors_origin = $cors_origin;
 	}
 
+	/**
+	 * Register a new endpoint
+	 * @return Endpoint
+	 */
 	public function __call($name, $arguments)
 	{
 		$http_methods = array_column(HTTPMethods::cases(), 'name');
@@ -55,7 +59,31 @@ class RequestHandler
 		$path = $arguments[0];
 		$path_segments = Utils::get_endpoints_path_segments($path);
 
-		$endpoint = new Endpoint($name, $http_method, $path, $path_segments, $func);
+		$endpoint = new Endpoint($name, $http_method, $path, $path_segments, false, $func);
+		try {
+			$this->router->register($endpoint);
+		} catch (Exception $e) {
+			$this->logger->error($e->getMessage(), $e->getTrace());
+			Utils::response(null, "INTERNAL_SERVER_ERROR", 500);
+		}
+
+		return $endpoint;
+	}
+
+	/**
+	 * Handle file(s) upload
+	 * @param string $path The path of the endpoint
+	 * @param callable $func Callback function
+	 * @return Endpoint
+	 */
+	public function upload($path, $func, $allow_multiple_files = true, $allowed_extensions = [], $max_size = 0)
+	{
+		// register the endpoint
+		$name = Utils::get_endpoint_name($path);
+		$path_segments = Utils::get_endpoints_path_segments($path);
+
+		$endpoint = new Endpoint($name, (string) HTTPMethods::POST->value, $path, $path_segments, true, $func);
+		$endpoint->upload = new Upload(null, "upload", $allow_multiple_files, $allowed_extensions, $max_size);
 		try {
 			$this->router->register($endpoint);
 		} catch (Exception $e) {
@@ -114,6 +142,11 @@ class RequestHandler
 		$query = new Query($_GET, $endpoint->required_query_params);
 		$body = file_get_contents("php://input");
 		$body = new Body(json_decode($body, true), $endpoint->required_body_params);
+		$upload = $endpoint->upload;
+		if ($upload) {
+			$upload->set_files($_FILES);
+			$upload->upload();
+		}
 
 		// check if the user is logged in and if the user is allowed to access the endpoint
 		if ($endpoint->requires_login && !$this->user) {
@@ -127,9 +160,15 @@ class RequestHandler
 		// validate the query and body
 		$query->validate();
 		$body->validate();
+		$files = $upload->validate();
 
 		// call the endpoint function
-		$endpoint_function = isset($endpoint->func) ? $endpoint->func : $endpoint->name;
+		//$endpoint_function = isset($endpoint->func) ? $endpoint->func : $endpoint->name;
+		$endpoint_function = $endpoint->func;
+		if ($endpoint->upload) {
+			$endpoint_function($query, $body, $files, $this->user);
+			return;
+		}
 		$endpoint_function($query, $body, $this->user);
 	}
 

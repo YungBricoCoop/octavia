@@ -9,17 +9,22 @@ class Endpoint
 	public $path = null;
 	public $path_segments = null;
 	public $func = null;
+	/**
+	 * @var Upload
+	 */
+	public $upload = null;
 	public $requires_login = false;
 	public $requires_admin = false;
 	public $required_query_params = [];
 	public $required_body_params = [];
 
-	public function __construct($name, $http_method, $path, $path_segments, $func)
+	public function __construct($name, $http_method, $path, $path_segments, $upload, $func)
 	{
 		$this->name = $name;
 		$this->http_method = $http_method;
 		$this->path = $path;
 		$this->path_segments = $path_segments;
+		$this->upload = $upload;
 		$this->func = $func;
 	}
 

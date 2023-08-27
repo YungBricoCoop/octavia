@@ -2,6 +2,8 @@
 
 namespace Vendor\YbcFramework;
 
+use Ramsey\Uuid\Uuid;
+
 class Utils
 {
 
@@ -159,6 +161,19 @@ class Utils
 	public static function is_path_absolute($path)
 	{
 		return $path[0] === '/' || (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' && isset($path[1]) && $path[1] === ':');
+	}
+
+	/**
+	 * Get uuid v4
+	 * @return string
+	 */
+	public static function get_uuid(){
+		$uuid = Uuid::uuid4();
+		return $uuid->toString();
+	}
+
+	public static function get_file_extension($file_name){
+		return pathinfo($file_name, PATHINFO_EXTENSION);
 	}
 }
  
