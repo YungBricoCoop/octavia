@@ -10,6 +10,7 @@ class Route implements RouteInterface
 	public $http_method = null;
 	public $path = null;
 	public $path_segments = null;
+	public $dynamic_segments_values = [];
 	public $func = null;
 	public ?Upload $upload = null;
 	public ?Query $query = null;

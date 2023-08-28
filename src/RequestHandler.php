@@ -168,12 +168,16 @@ class RequestHandler
 
 		// call the route function
 		//$route_function = isset($route->func) ? $route->func : $route->name;
-		$route_function = $route->func;
+		$function_params = $route->dynamic_segments_values ;
+		$function_params[] = $route->query;
+		$function_params[] = $route->body;
+
 		if ($route->upload) {
-			$route_function($route->query, $route->body, $route->upload->get_uploaded_files(), $this->user);
-			return;
+			$function_params[] = $route->upload->get_uploaded_files();
 		}
-		$route_function($route->query, $route->body, $this->user);
+		
+		$function_params[] = $this->user;
+		call_user_func_array($route->func, $function_params);
 	}
 
 	public function handle_cors()

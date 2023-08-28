@@ -4,6 +4,8 @@
 
 - [x] Use enum for the `http method`
 - [x] Dynamic routing
+- [x] Pass dynamic params to the route function
+- [ ] Validate dynamic params type
 - [ ] Accept form data
 - [x] File upload
 - [ ] Handle JWT
@@ -12,4 +14,3 @@
 - [x] Custom Logger
 - [ ] Middleware support
 - [ ] Template engine
-- [ ] Call function with dynamic params

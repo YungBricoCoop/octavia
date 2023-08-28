@@ -44,10 +44,14 @@ class Router
 		// match the route based on the order of the segements and their name
 		foreach ($matched as $route) {
 			$route_segments = $route->path_segments;
+			$route_dynamic_segments_values = [];
 			$route_matched = true;
 			foreach ($segments as $index => $segment) {
 				// if the segment is a variable, it matches
-				if (substr($route_segments[$index], 0, 1) == "{") continue;
+				if (substr($route_segments[$index], 0, 1) == "{") {
+					$route_dynamic_segments_values[] = $segment;
+					continue;
+				}
 
 				// if the segment is not a variable, it must match the segment
 				if ($segment == $route_segments[$index]) continue;
@@ -56,6 +60,7 @@ class Router
 			}
 			if (!$route_matched) continue;
 			if ($route->http_method != $http_method) continue;
+			$route->dynamic_segments_values = $route_dynamic_segments_values;
 			return $route;
 		}
 
