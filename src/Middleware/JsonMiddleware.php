@@ -16,7 +16,7 @@ class JsonMiddleware implements MiddlewareInterface
 
 	public function handle_after(Response $response)
 	{
-		$response->data = json_encode($response->data);
+		$response->data = json_encode(["data" => $response->data]);
 		$response->headers['Content-Type'] =  'application/json';
 
 		return $response;

@@ -72,7 +72,7 @@ class RequestHandler
 			$route = $this->router->register($name, $http_method, $path, $path_segments, false, $func);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
-			$this->response(null, "INTERNAL_SERVER_ERROR", 500);
+			$this->response->data = "INTERNAL_SERVER_ERROR";
 		}
 
 		return $route;
@@ -122,24 +122,10 @@ class RequestHandler
 			if ($e->getDetail()) {
 				$this->logger->error($e->getMessage() . "(" . $e->getDetail() . ")", $e->getTrace());
 			}
-			$this->response->data = $e->getMessage();
-			$this->response->status_code = $e->getStatusCode();
+			$this->send_response($e->getMessage(), $e->getCode());
 		} catch (\Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
-			$this->response->data = "INTERNAL_SERVER_ERROR";
-			$this->response->status_code = 500;
-		}
-
-		try {
-			//INFO: Apply the middlewares to the response, this might cause problems if the middlewares create exceptions
-			$this->response = $this->middleware_handler->handle_after($this->response);
-			$this->response->send();
-		} catch (\Exception $e) {
-			// if the middlewares create exceptions, default the response to json with code 500
-			$this->logger->error($e->getMessage(), $e->getTrace());
-			$this->response->data = json_encode("INTERNAL_SERVER_ERROR");
-			$this->response->status_code = 500;
-			$this->response->send();
+			$this->send_response("INTERNAL_SERVER_ERROR", 500);
 		}
 	}
 
@@ -214,12 +200,23 @@ class RequestHandler
 	 * @param int $status_code The status code to send
 	 * @return void
 	 */
-	public function response($data, $error = null, $status_code = 200)
+	public function send_response($data, $status_code = 200)
 	{
-		$response = new Response($data, $error, $status_code);
-		$response = $this->middleware_handler->handle_after($response);
+		$this->response->data = $data;
+		$this->response->status_code = $status_code;
 
-		$response->send();
+
+		try {
+			//INFO: Apply the middlewares to the response, this might cause problems if the middlewares create exceptions
+			$this->response = $this->middleware_handler->handle_after($this->response);
+			$this->response->send();
+		} catch (\Exception $e) {
+			// if the middlewares create exceptions, default the response to json with code 500
+			$this->logger->error($e->getMessage(), $e->getTrace());
+			$this->response->data = json_encode("INTERNAL_SERVER_ERROR");
+			$this->response->status_code = 500;
+			$this->response->send();
+		}
 	}
 
 	public function set_user($user)
