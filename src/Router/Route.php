@@ -9,23 +9,25 @@ class Route
 	public $path = null;
 	public $path_segments = null;
 	public $func = null;
-	/**
-	 * @var Upload
-	 */
-	public $upload = null;
+	public ?Upload $upload = null;
+	public ?Query $query = null;
+	public ?Body $body = null;
+	public $is_upload = false;
 	public $requires_login = false;
 	public $requires_admin = false;
-	public $required_query_params = [];
-	public $required_body_params = [];
 
-	public function __construct($name, $http_method, $path, $path_segments, $upload, $func)
+	public function __construct($name, $http_method, $path, $path_segments, $is_upload, $func)
 	{
 		$this->name = $name;
 		$this->http_method = $http_method;
 		$this->path = $path;
 		$this->path_segments = $path_segments;
-		$this->upload = $upload;
+		$this->is_upload = $is_upload;
 		$this->func = $func;
+
+		$this->query = new Query();
+		$this->body = new Body();
+		$this->upload = new Upload();
 	}
 
 
@@ -51,21 +53,21 @@ class Route
 	 * Set the required params
 	 * @param array|string $params
 	 * Accepts an array of strings or a string (class)
-	 *  @return Endpoint
+	 *  @return Route
 	 */
 	public function query($params)
 	{
-		$this->required_query_params = $params;
+		$this->query->set_required_params($params);
 		return $this;
 	}
 
 	/**
 	 * Set the required  params
-	 *  @return Endpoint
+	 *  @return Route
 	 */
 	public function q($params)
 	{
-		$this->required_query_params = $params;
+		$this->query->set_required_params($params);
 		return $this;
 	}
 
@@ -74,27 +76,27 @@ class Route
 	 * @param array|string $params
 	 * Accepts an array of strings and assocative string => string arrays or a string (class)
 	 * Ex : ["info", "user" => User::class] or directly User::class
-	 * @return Endpoint
+	 * @return Route
 	 */
 	public function body($params)
 	{
-		$this->required_body_params = $params;
+		$this->body->set_required_body($params);
 		return $this;
 	}
 
 	/**
 	 * Set the required body params
-	 *  @return Endpoint
+	 *  @return Route
 	 */
 	public function b($params)
 	{
-		$this->required_body_params = $params;
+		$this->body->set_required_body($params);
 		return $this;
 	}
 
 	/**
 	 * Callback function
-	 *  @return Endpoint
+	 *  @return Route
 	 */
 	public function f($func)
 	{

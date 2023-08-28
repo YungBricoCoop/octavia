@@ -3,87 +3,89 @@
 namespace Vendor\YbcFramework\Router;
 
 use Vendor\YbcFramework\Utils\Utils;
-use Vendor\YbcFramework\Endpoint;
 
 class Router
 {
 	/**
-	 * @var Endpoint[]
+	 * @var Route[]
 	 */
-	private $endpoints = [];
+	private $routes = [];
 
 	/**
-	 * Get the endpoint that matches the given path
-	 * Endpoints defined order is important
+	 * Get the route that matches the given path
+	 * Routes defined order is important
 	 * @param string $http_method The http method
-	 * @param string $endpoint_path The path of the endpoint
-	 * @return Endpoint|null
+	 * @param string $route_path The path of the route
+	 * @return Route|null
 	 */
-	public function route($http_method, $endpoint_path)
+	public function route($http_method, $route_path)
 	{
-		/* INFO: This code is in comments because I think it could break the order priority of the endpoints
-		// if the endpoint does not use dynamic variables, we can directly find it
-		if (array_key_exists($key, $this->endpoints)) {
-			return $this->endpoints[$key];
+		/* INFO: This code is in comments because I think it could break the order priority of the routes
+		// if the route does not use dynamic variables, we can directly find it
+		if (array_key_exists($key, $this->routes)) {
+			return $this->routes[$key];
 		} */
 
-		// match endpoints by number of segments
-		$segments = Utils::get_endpoints_path_segments($endpoint_path);
+		// match routes by number of segments
+		$segments = Utils::get_route_path_segments($route_path);
 		/**
-		 * @var Endpoint[]
+		 * @var Route[]
 		 */
 		$matched = [];
-		foreach ($this->endpoints as $endpoint) {
-			if (count($segments) == count($endpoint->path_segments)) {
-				$matched[] = $endpoint;
+		foreach ($this->routes as $route) {
+			if (count($segments) == count($route->path_segments)) {
+				$matched[] = $route;
 			}
 		}
 
-		// if no endpoint matches, return null
+		// if no route matches, return null
 		if (empty($matched)) return null;
 
-		// match the endpoint based on the order of the segements and their name
-		foreach ($matched as $endpoint) {
-			$endpoint_segments = $endpoint->path_segments;
-			$endpoint_matched = true;
+		// match the route based on the order of the segements and their name
+		foreach ($matched as $route) {
+			$route_segments = $route->path_segments;
+			$route_matched = true;
 			foreach ($segments as $index => $segment) {
 				// if the segment is a variable, it matches
-				if (substr($endpoint_segments[$index], 0, 1) == "{") continue;
+				if (substr($route_segments[$index], 0, 1) == "{") continue;
 
 				// if the segment is not a variable, it must match the segment
-				if ($segment == $endpoint_segments[$index]) continue;
-				$endpoint_matched = false;
+				if ($segment == $route_segments[$index]) continue;
+				$route_matched = false;
 				break;
 			}
-			if (!$endpoint_matched) continue;
-			if ($endpoint->http_method != $http_method) continue;
-			return $endpoint;
+			if (!$route_matched) continue;
+			if ($route->http_method != $http_method) continue;
+			return $route;
 		}
 
-		// if no endpoint matches, return null
+		// if no route matches, return null
 		return null;
 	}
 
 	/**
-	 * Register a new endpoint
-	 * @param Endpoint $endpoint
+	 * Register a new route
+	 * @param Route $route
+	 * @return Route
 	 */
-	public function register($endpoint)
+	public function register($name, $http_method, $path, $path_segments, $is_upload, $func)
 	{
-		$key = $endpoint->http_method . $endpoint->path;
-		if (array_key_exists($key, $this->endpoints)) {
+		$route = new Route($name, $http_method, $path, $path_segments, $is_upload, $func);
+		$key = $http_method . $path;
+		if (array_key_exists($key, $this->routes)) {
 			throw new \InvalidArgumentException("ENDPOINT_ALREADY_REGISTERED");
 		}
 		//INFO: Might need to check segments without dynamic variables to avoid conflicts
-		$this->endpoints[$key] = $endpoint;
+		$this->routes[$key] = $route;
+		return $route;
 	}
 
 	/**
-	 * Get all the registered endpoints
-	 * @return Endpoint[]
+	 * Get all the registered routes
+	 * @return Route[]
 	 */
-	public function getEndpoints()
+	public function getRoutes()
 	{
-		return $this->endpoints;
+		return $this->routes;
 	}
 }

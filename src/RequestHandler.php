@@ -49,25 +49,26 @@ class RequestHandler
 		$http_method = strtoupper($name);
 		// check if the method is allowed, by key
 		if (!in_array($http_method, $http_methods)) {
+			//TODO: Throw exception
 			return;
 		}
 
 		$func = $arguments[1] ?? null;
 
 		// register the endpoint
-		$name = Utils::get_endpoint_name($arguments[0]);
+		$name = Utils::get_route_name($arguments[0]);
 		$path = $arguments[0];
-		$path_segments = Utils::get_endpoints_path_segments($path);
+		$path_segments = Utils::get_route_path_segments($path);
 
-		$endpoint = new Router\Route($name, $http_method, $path, $path_segments, false, $func);
+		$route = null;
 		try {
-			$this->router->register($endpoint);
+			$route = $this->router->register($name, $http_method, $path, $path_segments, false, $func);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			Utils::response(null, "INTERNAL_SERVER_ERROR", 500);
 		}
 
-		return $endpoint;
+		return $route;
 	}
 
 	/**
@@ -78,20 +79,22 @@ class RequestHandler
 	 */
 	public function upload($path, $func, $allow_multiple_files = true, $allowed_extensions = [], $max_size = 0)
 	{
-		// register the endpoint
-		$name = Utils::get_endpoint_name($path);
-		$path_segments = Utils::get_endpoints_path_segments($path);
+		$http_method = HTTPMethods::POST->value;
 
-		$endpoint = new Router\Route($name, (string) HTTPMethods::POST->value, $path, $path_segments, true, $func);
-		$endpoint->upload = new Router\Upload(null, "upload", $allow_multiple_files, $allowed_extensions, $max_size);
+		// register the endpoint
+		$name = Utils::get_route_name($path);
+		$path_segments = Utils::get_route_path_segments($path);
+
+		$route = null;
 		try {
-			$this->router->register($endpoint);
+			$route = $this->router->register($name, $http_method, $path, $path_segments, true, $func);
+			$route->upload->set_params("upload", $allow_multiple_files, $allowed_extensions, $max_size);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			Utils::response(null, "INTERNAL_SERVER_ERROR", 500);
 		}
 
-		return $endpoint;
+		return $route;
 	}
 
 	/**
@@ -138,15 +141,11 @@ class RequestHandler
 
 		$this->logger->info("[$method] /$endpoint->path ($ip)");
 
-		// build the query and body objects
-		$query = new Router\Query($_GET, $endpoint->required_query_params);
-		$body = file_get_contents("php://input");
-		$body = new Router\Body(json_decode($body, true), $endpoint->required_body_params);
-		$upload = $endpoint->upload;
-		if ($upload) {
-			$upload->set_files($_FILES);
-			$upload->upload();
-		}
+		// set the query, body and files
+		$endpoint->query->set_data($_GET);
+		$endpoint->body->set_data(json_decode(file_get_contents("php://input"), true));
+		$endpoint->upload->set_files($_FILES);
+		if ($endpoint->is_upload) $endpoint->upload->upload();
 
 		// check if the user is logged in and if the user is allowed to access the endpoint
 		if ($endpoint->requires_login && !$this->user) {
@@ -158,18 +157,18 @@ class RequestHandler
 		}
 
 		// validate the query and body
-		$query->validate();
-		$body->validate();
-		if ($upload) $files = $upload->validate();
+		$endpoint->query->validate();
+		$endpoint->body->validate();
+		if ($endpoint->is_upload) $endpoint->upload->validate();
 
 		// call the endpoint function
 		//$endpoint_function = isset($endpoint->func) ? $endpoint->func : $endpoint->name;
 		$endpoint_function = $endpoint->func;
 		if ($endpoint->upload) {
-			$endpoint_function($query, $body, $files, $this->user);
+			$endpoint_function($endpoint->query, $endpoint->body, $endpoint->upload->get_uploaded_files(), $this->user);
 			return;
 		}
-		$endpoint_function($query, $body, $this->user);
+		$endpoint_function($endpoint->query, $endpoint->body, $this->user);
 	}
 
 	public function handle_cors()

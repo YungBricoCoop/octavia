@@ -10,7 +10,7 @@ class Body
 	private $data = [];
 	private $required_body = [];
 
-	public function __construct($data, $required_body)
+	public function __construct($data = [], $required_body = [])
 	{
 		$this->data = $data;
 		$this->required_body = $required_body;
@@ -62,8 +62,13 @@ class Body
 		return $this->data[$key] ?? null;
 	}
 
-	public function get_data()
+	public function set_data($data)
 	{
-		return $this->data;
+		$this->data = $data;
+	}
+
+	public function set_required_body($required_body)
+	{
+		$this->required_body = $required_body;
 	}
 }

@@ -10,30 +10,11 @@ use RuntimeException;
 class Upload
 {
 	private $files;
-	private $files_path;
+	private $uploaded_files;
 	private $upload_dir;
 	private $allow_multiple_files;
 	private $allowed_extensions;
 	private $max_file_size;
-
-	public function __construct(
-		$files,
-		$upload_dir = null,
-		$allow_multiple_files = true,
-		$allowed_extensions = [],
-		$max_file_size = 0
-	) {
-		$this->files = $files;
-		$this->upload_dir = $upload_dir;
-		$this->allow_multiple_files = $allow_multiple_files;
-		$this->allowed_extensions = $allowed_extensions;
-		$this->max_file_size = $max_file_size;
-
-		// Create the upload directory if it doesn't exist
-		if (!is_null($this->upload_dir) && !file_exists($this->upload_dir)) {
-			mkdir($this->upload_dir, 0755, true);
-		}
-	}
 
 	public function validate()
 	{
@@ -62,7 +43,7 @@ class Upload
 			}
 		}
 
-		return $this->files_path;
+		return $this->uploaded_files;
 	}
 
 	public function upload()
@@ -72,11 +53,24 @@ class Upload
 
 		for ($i = 0; $i < $fileCount; $i++) {
 			$target_file = $this->upload_dir . DIRECTORY_SEPARATOR . Utils::get_uuid() . '.' . Utils::get_file_extension($this->files['name'][$i]);
-			$this->files_path[] = $target_file;
+			$this->uploaded_files[] = $target_file;
 			move_uploaded_file($this->files['tmp_name'][$i], $target_file);
 		}
 
 		return true;
+	}
+
+	public function get_uploaded_files()
+	{
+		return $this->uploaded_files;
+	}
+
+	public function set_params($upload_dir, $allow_multiple_files, $allowed_extensions, $max_file_size)
+	{
+		$this->upload_dir = $upload_dir;
+		$this->allow_multiple_files = $allow_multiple_files;
+		$this->allowed_extensions = $allowed_extensions;
+		$this->max_file_size = $max_file_size;
 	}
 
 	public function set_files($files)
@@ -86,10 +80,5 @@ class Upload
 			$files = $files['files'];
 		}
 		$this->files = $files;
-	}
-
-	public function get_files()
-	{
-		return $this->files;
 	}
 }

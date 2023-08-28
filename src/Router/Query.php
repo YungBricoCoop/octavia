@@ -10,7 +10,7 @@ class Query
 	private $data = [];
 	private $required_params = [];
 
-	public function __construct($data, $required_params)
+	public function __construct($data = [], $required_params = [])
 	{
 		$this->data = $data;
 		$this->required_params = $required_params;
@@ -56,5 +56,15 @@ class Query
 	public function __get($key)
 	{
 		return $this->data[$key] ?? null;
+	}
+
+	public function set_data($data)
+	{
+		$this->data = $data;
+	}
+
+	public function set_required_params($required_params)
+	{
+		$this->required_params = $required_params;
 	}
 }

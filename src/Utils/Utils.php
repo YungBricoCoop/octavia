@@ -118,12 +118,12 @@ class Utils
 	}
 
 	/**
-	 * Convert an endpoint to a function name
+	 * Convert a route to a function name
 	 * For example: /api/v1/users/1 => api_v1_users_1
 	 * @param string $path
 	 * @return string
 	 */
-	public static function get_endpoint_name($path)
+	public static function get_route_name($path)
 	{
 		$path = str_replace('/', '_', $path);
 		$path = str_replace('-', '_', $path);
@@ -134,12 +134,12 @@ class Utils
 	}
 
 	/**
-	 * Get all the segments of an endpoint
-	 * @param string $endpoint
+	 * Get all the segments of a route
+	 * @param string $route
 	 * @return array
 	 * @example /api/v1/{user}/homepage => ["api", "v1", "{user}", "homepage"]
 	 */
-	public static function get_endpoints_path_segments($path)
+	public static function get_route_path_segments($path)
 	{
 		// remove trailing slash if any
 		if (substr($path, -1) == "/") {
