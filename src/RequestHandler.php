@@ -160,7 +160,7 @@ class RequestHandler
 		// validate the query and body
 		$query->validate();
 		$body->validate();
-		$files = $upload->validate();
+		if ($upload) $files = $upload->validate();
 
 		// call the endpoint function
 		//$endpoint_function = isset($endpoint->func) ? $endpoint->func : $endpoint->name;
