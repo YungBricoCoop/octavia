@@ -8,8 +8,8 @@ use CustomException, ForbiddenException, UnauthorizedException, MethodNotAllowed
 use Exception;
 use Vendor\YbcFramework\Enums\HTTPMethods;
 use Vendor\YbcFramework\Router;
-use Vendor\YbcFramework\Utils;
-use Vendor\YbcFramework\Log;
+use Vendor\YbcFramework\Utils\Utils;
+use Vendor\YbcFramework\Utils\Log;
 
 
 /**
@@ -33,7 +33,7 @@ class RequestHandler
 	 */
 	public function __construct($user = [], $cors_origin = "")
 	{
-		$this->router = new Router();
+		$this->router = new Router\Router();
 		$this->logger = new Log("RequestHandlerLogger");
 		$this->user = $user;
 		$this->cors_origin = $cors_origin;
@@ -59,7 +59,7 @@ class RequestHandler
 		$path = $arguments[0];
 		$path_segments = Utils::get_endpoints_path_segments($path);
 
-		$endpoint = new Endpoint($name, $http_method, $path, $path_segments, false, $func);
+		$endpoint = new Router\Route($name, $http_method, $path, $path_segments, false, $func);
 		try {
 			$this->router->register($endpoint);
 		} catch (Exception $e) {
@@ -82,8 +82,8 @@ class RequestHandler
 		$name = Utils::get_endpoint_name($path);
 		$path_segments = Utils::get_endpoints_path_segments($path);
 
-		$endpoint = new Endpoint($name, (string) HTTPMethods::POST->value, $path, $path_segments, true, $func);
-		$endpoint->upload = new Upload(null, "upload", $allow_multiple_files, $allowed_extensions, $max_size);
+		$endpoint = new Router\Route($name, (string) HTTPMethods::POST->value, $path, $path_segments, true, $func);
+		$endpoint->upload = new Router\Upload(null, "upload", $allow_multiple_files, $allowed_extensions, $max_size);
 		try {
 			$this->router->register($endpoint);
 		} catch (Exception $e) {
@@ -139,9 +139,9 @@ class RequestHandler
 		$this->logger->info("[$method] /$endpoint->path ($ip)");
 
 		// build the query and body objects
-		$query = new Query($_GET, $endpoint->required_query_params);
+		$query = new Router\Query($_GET, $endpoint->required_query_params);
 		$body = file_get_contents("php://input");
-		$body = new Body(json_decode($body, true), $endpoint->required_body_params);
+		$body = new Router\Body(json_decode($body, true), $endpoint->required_body_params);
 		$upload = $endpoint->upload;
 		if ($upload) {
 			$upload->set_files($_FILES);

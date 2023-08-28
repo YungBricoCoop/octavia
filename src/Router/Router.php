@@ -1,9 +1,8 @@
 <?php
 
-namespace Vendor\YbcFramework;
+namespace Vendor\YbcFramework\Router;
 
-use Vendor\YbcFramework\Enums\HTTPMethods;
-use Vendor\YbcFramework\Utils;
+use Vendor\YbcFramework\Utils\Utils;
 use Vendor\YbcFramework\Endpoint;
 
 class Router

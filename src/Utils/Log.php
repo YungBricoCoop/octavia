@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\YbcFramework;
+namespace Vendor\YbcFramework\Utils;
 
 use Monolog\Logger;
 use Monolog\Handler\RotatingFileHandler;

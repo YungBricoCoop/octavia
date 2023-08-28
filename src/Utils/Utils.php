@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\YbcFramework;
+namespace Vendor\YbcFramework\Utils;
 
 use Ramsey\Uuid\Uuid;
 
@@ -167,13 +167,14 @@ class Utils
 	 * Get uuid v4
 	 * @return string
 	 */
-	public static function get_uuid(){
+	public static function get_uuid()
+	{
 		$uuid = Uuid::uuid4();
 		return $uuid->toString();
 	}
 
-	public static function get_file_extension($file_name){
+	public static function get_file_extension($file_name)
+	{
 		return pathinfo($file_name, PATHINFO_EXTENSION);
 	}
 }
- 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\YbcFramework;
+namespace Vendor\YbcFramework\Router;
 
-class Endpoint
+class Route
 {
 	public $name = null;
 	public $http_method = null;

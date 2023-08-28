@@ -1,7 +1,8 @@
 <?php
 
-namespace Vendor\YbcFramework;
+namespace Vendor\YbcFramework\Router;
 
+use Vendor\YbcFramework\Utils\Utils;
 use MissingBodyParameterException, MissingObjectPropertyException, WrongObjectPropertyTypeException;
 
 class Body
