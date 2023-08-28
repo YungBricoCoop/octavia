@@ -11,6 +11,7 @@ use Vendor\YbcFramework\Enums\HTTPMethods;
 use Vendor\YbcFramework\Router\Router;
 use Vendor\YbcFramework\Router\Route;
 use Vendor\YbcFramework\Middleware\MiddlewareHandler;
+use Vendor\YbcFramework\Middleware\JsonMiddleware;
 use Vendor\YbcFramework\Utils\Utils;
 use Vendor\YbcFramework\Utils\Log;
 
@@ -26,7 +27,7 @@ class RequestHandler
 {
 
 	private Router $router;
-	private MiddlewareHandler $middleware_handler;
+	public MiddlewareHandler $middleware_handler;
 	private $user = [];
 	public $logger = null;
 
@@ -38,6 +39,7 @@ class RequestHandler
 	{
 		$this->router = new Router();
 		$this->middleware_handler = new MiddlewareHandler();
+		$this->middleware_handler->add(new JsonMiddleware());
 		$this->logger = new Log("RequestHandlerLogger");
 		$this->user = $user;
 	}
@@ -68,7 +70,7 @@ class RequestHandler
 			$route = $this->router->register($name, $http_method, $path, $path_segments, false, $func);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
-			Utils::response(null, "INTERNAL_SERVER_ERROR", 500);
+			$this->response(null, "INTERNAL_SERVER_ERROR", 500);
 		}
 
 		return $route;
@@ -97,7 +99,7 @@ class RequestHandler
 			$route->upload->set_params("upload", $allow_multiple_files, $allowed_extensions, $max_size);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
-			Utils::response(null, "INTERNAL_SERVER_ERROR", 500);
+			$this->response(null, "INTERNAL_SERVER_ERROR", 500);
 		}
 
 		return $route;
@@ -117,37 +119,42 @@ class RequestHandler
 		} catch (CustomException $e) {
 			if ($e->getDetail()) {
 				$this->logger->error($e->getMessage() . "(" . $e->getDetail() . ")", $e->getTrace());
-				Utils::response(null, $e->getMessage(), $e->getStatusCode());
+				$this->response(null, $e->getMessage(), $e->getStatusCode());
 			}
 
 			$this->logger->error($e->getMessage(), $e->getTrace());
-			Utils::response(null, $e->getMessage(), $e->getStatusCode());
+			$this->response(null, $e->getMessage(), $e->getStatusCode());
 		} catch (\Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
-			Utils::response(null, "INTERNAL_SERVER_ERROR", 500);
+			$this->response(null, "INTERNAL_SERVER_ERROR", 500);
 		}
 	}
 
 	private function handle_request_with_exception()
 	{
 		// get the request method and ip
-		$method = $_SERVER["REQUEST_METHOD"] ?? "GET";
 		$ip = $_SERVER["REMOTE_ADDR"] ?? "unknown";
 
+		$request = new Request();
+		$response = null;
+
+		// Process the request with the middlewares
+		$request = $this->middleware_handler->handle_before($request);
+
 		// route the request
-		$path = $_GET["route"] ?? "";
-		$route = $this->router->route($method, $path);
+		$path = $request->query_params["route"] ?? "";
+		$route = $this->router->route($request->method, $path);
 
 		if (!$route) {
 			throw new NotFoundException();
 		}
 
-		$this->logger->info("[$method] /$route->path ($ip)");
+		$this->logger->info("[$request->method] /$route->path ($ip)");
 
 		// set the query, body and files
-		$route->query->set_data($_GET);
-		$route->body->set_data(json_decode(file_get_contents("php://input"), true));
-		$route->upload->set_files($_FILES);
+		$route->query->set_data($request->query_params);
+		$route->body->set_data($request->body);
+		$route->upload->set_files($request->files);
 		if ($route->is_upload) $route->upload->upload();
 
 		// check if the user is logged in and if the user is allowed to access the route
@@ -164,27 +171,40 @@ class RequestHandler
 		$route->body->validate();
 		if ($route->is_upload) $route->upload->validate();
 
-		// call the route function
-		//$route_function = isset($route->func) ? $route->func : $route->name;
+
+		// build the function params
 		$function_params = $route->dynamic_segments_values;
 		$function_params[] = $route->query;
 		$function_params[] = $route->body;
+		if ($route->upload) $function_params[] = $route->upload->get_uploaded_files();
+		$function_params[] = $this->user;
 
-		if ($route->upload) {
-			$function_params[] = $route->upload->get_uploaded_files();
+		// call the route function
+		$result = call_user_func_array($route->func, $function_params);
+
+		if ($result instanceof Response) {
+			$response = $result;
+		} else {
+			$response = new Response($result);
 		}
 
-		$function_params[] = $this->user;
-		call_user_func_array($route->func, $function_params);
+		// process the response with the middlewares
+		$response = $this->middleware_handler->handle_after($response);
+
+		// send the response
+		$response->send();
 	}
 
 	/**
-	 * Add a middleware
-	 * @param callable $func
+	 * Send a response
+	 * @param mixed $data The data to send
+	 * @param string $error The error to send
+	 * @param int $status_code The status code to send
+	 * @return void
 	 */
-	public function register_middleware($func)
+	public function response($data, $error = null, $status_code = 200)
 	{
-		$this->middleware_handler->register($func);
+		new Response($data, $error, $status_code);
 	}
 
 	public function set_user($user)

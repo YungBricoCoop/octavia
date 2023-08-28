@@ -12,5 +12,5 @@
 - [x] Throw and handle custom exceptions
 - [x] Validate request Query params and Body by Class, array of Class, or array of strings, accept optional params
 - [x] Custom Logger
-- [ ] Middleware support
+- [x] Middleware support
 - [ ] Template engine
