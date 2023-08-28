@@ -29,6 +29,7 @@ class RequestHandler
 	private Router $router;
 	public MiddlewareHandler $middleware_handler;
 	private $user = [];
+	private $response = null;
 	public $logger = null;
 
 	/**
@@ -42,6 +43,7 @@ class RequestHandler
 		$this->middleware_handler->add(new JsonMiddleware());
 		$this->logger = new Log("RequestHandlerLogger");
 		$this->user = $user;
+		$this->response = new Response();
 	}
 
 	/**
@@ -119,14 +121,25 @@ class RequestHandler
 		} catch (CustomException $e) {
 			if ($e->getDetail()) {
 				$this->logger->error($e->getMessage() . "(" . $e->getDetail() . ")", $e->getTrace());
-				$this->response(null, $e->getMessage(), $e->getStatusCode());
 			}
-
-			$this->logger->error($e->getMessage(), $e->getTrace());
-			$this->response(null, $e->getMessage(), $e->getStatusCode());
+			$this->response->data = $e->getMessage();
+			$this->response->status_code = $e->getStatusCode();
 		} catch (\Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
-			$this->response(null, "INTERNAL_SERVER_ERROR", 500);
+			$this->response->data = "INTERNAL_SERVER_ERROR";
+			$this->response->status_code = 500;
+		}
+
+		try {
+			//INFO: Apply the middlewares to the response, this might cause problems if the middlewares create exceptions
+			$this->response = $this->middleware_handler->handle_after($this->response);
+			$this->response->send();
+		} catch (\Exception $e) {
+			// if the middlewares create exceptions, default the response to json with code 500
+			$this->logger->error($e->getMessage(), $e->getTrace());
+			$this->response->data = json_encode("INTERNAL_SERVER_ERROR");
+			$this->response->status_code = 500;
+			$this->response->send();
 		}
 	}
 
@@ -136,7 +149,6 @@ class RequestHandler
 		$ip = $_SERVER["REMOTE_ADDR"] ?? "unknown";
 
 		$request = new Request();
-		$response = null;
 
 		// Process the request with the middlewares
 		$request = $this->middleware_handler->handle_before($request);
@@ -183,16 +195,16 @@ class RequestHandler
 		$result = call_user_func_array($route->func, $function_params);
 
 		if ($result instanceof Response) {
-			$response = $result;
+			$this->response = $result;
 		} else {
-			$response = new Response($result);
+			$this->response = new Response($result);
 		}
 
 		// process the response with the middlewares
-		$response = $this->middleware_handler->handle_after($response);
+		$this->response = $this->middleware_handler->handle_after($this->response);
 
 		// send the response
-		$response->send();
+		$this->response->send();
 	}
 
 	/**
@@ -204,7 +216,10 @@ class RequestHandler
 	 */
 	public function response($data, $error = null, $status_code = 200)
 	{
-		new Response($data, $error, $status_code);
+		$response = new Response($data, $error, $status_code);
+		$response = $this->middleware_handler->handle_after($response);
+
+		$response->send();
 	}
 
 	public function set_user($user)
