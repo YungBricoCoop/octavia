@@ -2,7 +2,9 @@
 
 namespace Vendor\YbcFramework\Router;
 
-class Route
+use Vendor\YbcFramework\Interfaces\RouteInterface;
+
+class Route implements RouteInterface
 {
 	public $name = null;
 	public $http_method = null;

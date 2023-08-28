@@ -6,18 +6,20 @@ require_once "Exceptions.php";
 
 use CustomException, ForbiddenException, UnauthorizedException, MethodNotAllowedException, NotFoundException, ConflictException, InternalServerErrorException;
 use Exception;
+use Vendor\YbcFramework\Interfaces\RouteInterface;
 use Vendor\YbcFramework\Enums\HTTPMethods;
-use Vendor\YbcFramework\Router;
+use Vendor\YbcFramework\Router\Router;
+use Vendor\YbcFramework\Router\Route;
 use Vendor\YbcFramework\Utils\Utils;
 use Vendor\YbcFramework\Utils\Log;
 
 
 /**
- * @method Endpoint get(string $route, callable $callback = null)
- * @method Endpoint post(string $route, callable $callback = null)
- * @method Endpoint put(string $route, callable $callback = null)
- * @method Endpoint delete(string $route, callable $callback = null)
- * @method Endpoint patch(string $route, callable $callback = null)
+ * @method RouteInterface get(string $route, callable $callback = null)
+ * @method RouteInterface post(string $route, callable $callback = null)
+ * @method RouteInterface put(string $route, callable $callback = null)
+ * @method RouteInterface delete(string $route, callable $callback = null)
+ * @method RouteInterface patch(string $route, callable $callback = null)
  */
 class RequestHandler
 {
@@ -33,15 +35,15 @@ class RequestHandler
 	 */
 	public function __construct($user = [], $cors_origin = "")
 	{
-		$this->router = new Router\Router();
+		$this->router = new Router();
 		$this->logger = new Log("RequestHandlerLogger");
 		$this->user = $user;
 		$this->cors_origin = $cors_origin;
 	}
 
 	/**
-	 * Register a new endpoint
-	 * @return Endpoint
+	 * Register a new route
+	 * @return Route
 	 */
 	public function __call($name, $arguments)
 	{
@@ -55,7 +57,7 @@ class RequestHandler
 
 		$func = $arguments[1] ?? null;
 
-		// register the endpoint
+		// register the route
 		$name = Utils::get_route_name($arguments[0]);
 		$path = $arguments[0];
 		$path_segments = Utils::get_route_path_segments($path);
@@ -73,15 +75,18 @@ class RequestHandler
 
 	/**
 	 * Handle file(s) upload
-	 * @param string $path The path of the endpoint
+	 * @param string $path The path of the route
 	 * @param callable $func Callback function
-	 * @return Endpoint
+	 * @param bool $allow_multiple_files Allow multiple files to be uploaded
+	 * @param array $allowed_extensions Allowed file extensions
+	 * @param int $max_size Max file size in bytes
+	 * @return Route
 	 */
 	public function upload($path, $func, $allow_multiple_files = true, $allowed_extensions = [], $max_size = 0)
 	{
 		$http_method = HTTPMethods::POST->value;
 
-		// register the endpoint
+		// register the route
 		$name = Utils::get_route_name($path);
 		$path_segments = Utils::get_route_path_segments($path);
 
@@ -99,10 +104,10 @@ class RequestHandler
 
 	/**
 	 * Handle the request
-	 * Returns 404 if the endpoint is not found
-	 * Returns 401 if the endpoint requires login and the user is not logged in
-	 * Returns 403 if the user is not allowed to access the endpoint
-	 * Calls the endpoint function if the endpoint is found and the user is allowed to access it
+	 * Returns 404 if the route is not found
+	 * Returns 401 if the route requires login and the user is not logged in
+	 * Returns 403 if the user is not allowed to access the route
+	 * Calls the route function if the route is found and the user is allowed to access it
 	 */
 	public function handle_request()
 	{
@@ -132,43 +137,43 @@ class RequestHandler
 		$ip = $_SERVER["REMOTE_ADDR"] ?? "unknown";
 
 		// route the request
-		$path = $_GET["endpoint"] ?? "";
-		$endpoint = $this->router->route($method, $path);
+		$path = $_GET["route"] ?? "";
+		$route = $this->router->route($method, $path);
 
-		if (!$endpoint) {
+		if (!$route) {
 			throw new NotFoundException();
 		}
 
-		$this->logger->info("[$method] /$endpoint->path ($ip)");
+		$this->logger->info("[$method] /$route->path ($ip)");
 
 		// set the query, body and files
-		$endpoint->query->set_data($_GET);
-		$endpoint->body->set_data(json_decode(file_get_contents("php://input"), true));
-		$endpoint->upload->set_files($_FILES);
-		if ($endpoint->is_upload) $endpoint->upload->upload();
+		$route->query->set_data($_GET);
+		$route->body->set_data(json_decode(file_get_contents("php://input"), true));
+		$route->upload->set_files($_FILES);
+		if ($route->is_upload) $route->upload->upload();
 
-		// check if the user is logged in and if the user is allowed to access the endpoint
-		if ($endpoint->requires_login && !$this->user) {
+		// check if the user is logged in and if the user is allowed to access the route
+		if ($route->requires_login && !$this->user) {
 			throw new UnauthorizedException();
 		}
 
-		if ($endpoint->requires_admin && !$this->user["is_admin"]) {
+		if ($route->requires_admin && !$this->user["is_admin"]) {
 			throw new ForbiddenException();
 		}
 
-		// validate the query and body
-		$endpoint->query->validate();
-		$endpoint->body->validate();
-		if ($endpoint->is_upload) $endpoint->upload->validate();
+		// validate the query, body and files
+		$route->query->validate();
+		$route->body->validate();
+		if ($route->is_upload) $route->upload->validate();
 
-		// call the endpoint function
-		//$endpoint_function = isset($endpoint->func) ? $endpoint->func : $endpoint->name;
-		$endpoint_function = $endpoint->func;
-		if ($endpoint->upload) {
-			$endpoint_function($endpoint->query, $endpoint->body, $endpoint->upload->get_uploaded_files(), $this->user);
+		// call the route function
+		//$route_function = isset($route->func) ? $route->func : $route->name;
+		$route_function = $route->func;
+		if ($route->upload) {
+			$route_function($route->query, $route->body, $route->upload->get_uploaded_files(), $this->user);
 			return;
 		}
-		$endpoint_function($endpoint->query, $endpoint->body, $this->user);
+		$route_function($route->query, $route->body, $this->user);
 	}
 
 	public function handle_cors()
