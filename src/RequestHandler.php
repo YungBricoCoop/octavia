@@ -10,6 +10,7 @@ use Vendor\YbcFramework\Interfaces\RouteInterface;
 use Vendor\YbcFramework\Enums\HTTPMethods;
 use Vendor\YbcFramework\Router\Router;
 use Vendor\YbcFramework\Router\Route;
+use Vendor\YbcFramework\Middleware\MiddlewareHandler;
 use Vendor\YbcFramework\Utils\Utils;
 use Vendor\YbcFramework\Utils\Log;
 
@@ -24,21 +25,21 @@ use Vendor\YbcFramework\Utils\Log;
 class RequestHandler
 {
 
-	private $router = null;
+	private Router $router;
+	private MiddlewareHandler $middleware_handler;
 	private $user = [];
-	private $cors_origin = "";
 	public $logger = null;
 
 	/**
 	 * Create a new RequestHandler
 	 * @param array $user The user that is currently logged in
 	 */
-	public function __construct($user = [], $cors_origin = "")
+	public function __construct($user = [])
 	{
 		$this->router = new Router();
+		$this->middleware_handler = new MiddlewareHandler();
 		$this->logger = new Log("RequestHandlerLogger");
 		$this->user = $user;
-		$this->cors_origin = $cors_origin;
 	}
 
 	/**
@@ -129,9 +130,6 @@ class RequestHandler
 
 	private function handle_request_with_exception()
 	{
-		// handle cors
-		if ($this->cors_origin) $this->handle_cors();
-
 		// get the request method and ip
 		$method = $_SERVER["REQUEST_METHOD"] ?? "GET";
 		$ip = $_SERVER["REMOTE_ADDR"] ?? "unknown";
@@ -168,31 +166,25 @@ class RequestHandler
 
 		// call the route function
 		//$route_function = isset($route->func) ? $route->func : $route->name;
-		$function_params = $route->dynamic_segments_values ;
+		$function_params = $route->dynamic_segments_values;
 		$function_params[] = $route->query;
 		$function_params[] = $route->body;
 
 		if ($route->upload) {
 			$function_params[] = $route->upload->get_uploaded_files();
 		}
-		
+
 		$function_params[] = $this->user;
 		call_user_func_array($route->func, $function_params);
 	}
 
-	public function handle_cors()
+	/**
+	 * Add a middleware
+	 * @param callable $func
+	 */
+	public function register_middleware($func)
 	{
-
-		header("Access-Control-Allow-Origin: " . $this->cors_origin);
-		header("Access-Control-Allow-Credentials: true");
-
-		if ($_SERVER['REQUEST_METHOD'] != 'OPTIONS') {
-			return;
-		}
-
-		header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-		header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
-		Utils::response("OK");
+		$this->middleware_handler->register($func);
 	}
 
 	public function set_user($user)
