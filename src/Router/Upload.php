@@ -16,16 +16,21 @@ class Upload
 	private $allowed_extensions;
 	private $max_file_size;
 
+
+	/**
+	 * Validate the uploaded files
+	 * @return array The uploaded files
+	 */
 	public function validate()
 	{
-		$fileCount = count($this->files['name']);
+		$file_count = count($this->files['name']);
 
 		// Check if multiple files are uploaded without permission
-		if (!$this->allow_multiple_files && $fileCount > 1) {
+		if (!$this->allow_multiple_files && $file_count > 1) {
 			throw new RuntimeException("Multiple file uploads not allowed.");
 		}
 
-		for ($i = 0; $i < $fileCount; $i++) {
+		for ($i = 0; $i < $file_count; $i++) {
 			// Check for upload errors
 			if ($this->files['error'][$i] !== UPLOAD_ERR_OK) {
 				throw new RuntimeException("File upload error: " . $this->files['error'][$i]);
@@ -49,9 +54,9 @@ class Upload
 	public function upload()
 	{
 		$this->validate();
-		$fileCount = count($this->files['name']);
+		$file_count = count($this->files['name']);
 
-		for ($i = 0; $i < $fileCount; $i++) {
+		for ($i = 0; $i < $file_count; $i++) {
 			$target_file = $this->upload_dir . DIRECTORY_SEPARATOR . Utils::get_uuid() . '.' . Utils::get_file_extension($this->files['name'][$i]);
 			$this->uploaded_files[] = $target_file;
 			move_uploaded_file($this->files['tmp_name'][$i], $target_file);

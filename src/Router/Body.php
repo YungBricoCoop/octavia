@@ -16,14 +16,18 @@ class Body
 		$this->required_body = $required_body;
 	}
 
+	/**
+	 * Validate the body params
+	 * @return bool
+	 */
 	public function validate()
 	{
 		if (!$this->required_body || empty($this->required_body)) return true;
 
-		$this->validateProperty($this->data, $this->required_body);
+		$this->validate_proprety($this->data, $this->required_body);
 	}
 
-	private function validateProperty($data, $required)
+	private function validate_proprety($data, $required)
 	{
 		// If the value is a string and represents a class
 		if (is_string($required) && class_exists($required)) {
@@ -40,7 +44,7 @@ class Body
 		foreach ($required as $key => $value) {
 			// Check if a class is passed as a string
 			if (is_string($value) && class_exists($value)) {
-				$this->validateProperty($data[$key], $value);
+				$this->validate_proprety($data[$key], $value);
 			}
 
 			// If the key is an integer, it means that the value is a simple array

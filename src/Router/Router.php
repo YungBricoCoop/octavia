@@ -6,9 +6,7 @@ use Vendor\YbcFramework\Utils\Utils;
 
 class Router
 {
-	/**
-	 * @var Route[]
-	 */
+	/** @var Route[] */
 	private $routes = [];
 
 	/**
@@ -28,9 +26,7 @@ class Router
 
 		// match routes by number of segments
 		$segments = Utils::get_route_path_segments($route_path);
-		/**
-		 * @var Route[]
-		 */
+		/** * @var Route[] */
 		$matched = [];
 		foreach ($this->routes as $route) {
 			if (count($segments) == count($route->path_segments)) {

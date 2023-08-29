@@ -33,75 +33,43 @@ class Route implements RouteInterface
 		$this->upload = new Upload();
 	}
 
-
-	/**
-	 * Need to be logged in to access this endpoint
-	 */
-	public function login()
+	public function login(): self
 	{
 		$this->requires_login = true;
 		return $this;
 	}
 
-	/**
-	 * Need to be logged and an admin to access this endpoint
-	 */
-	public function admin()
+	public function admin(): self
 	{
 		$this->requires_admin = true;
 		return $this;
 	}
 
-	/**
-	 * Set the required params
-	 * @param array|string $params
-	 * Accepts an array of strings or a string (class)
-	 *  @return Route
-	 */
-	public function query($params)
+	public function query($params): self
 	{
 		$this->query->set_required_params($params);
 		return $this;
 	}
 
-	/**
-	 * Set the required  params
-	 *  @return Route
-	 */
-	public function q($params)
+	public function q($params): self
 	{
 		$this->query->set_required_params($params);
 		return $this;
 	}
 
-	/**
-	 * Set the required body params
-	 * @param array|string $params
-	 * Accepts an array of strings and assocative string => string arrays or a string (class)
-	 * Ex : ["info", "user" => User::class] or directly User::class
-	 * @return Route
-	 */
-	public function body($params)
+	public function body($params): self
 	{
 		$this->body->set_required_body($params);
 		return $this;
 	}
 
-	/**
-	 * Set the required body params
-	 *  @return Route
-	 */
-	public function b($params)
+	public function b($params): self
 	{
 		$this->body->set_required_body($params);
 		return $this;
 	}
 
-	/**
-	 * Callback function
-	 *  @return Route
-	 */
-	public function f($func)
+	public function f($func): self
 	{
 		$this->func = $func;
 		return $this;

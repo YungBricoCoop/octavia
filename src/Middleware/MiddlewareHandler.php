@@ -9,9 +9,7 @@ use Vendor\YbcFramework\Response;
 
 class MiddlewareHandler
 {
-	/**
-	 * @var MiddlewareInterface[]
-	 */
+	/** @var MiddlewareInterface[] */
 	private $middlewares = [];
 
 	public function __construct($middlewares = [])

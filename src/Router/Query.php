@@ -17,14 +17,18 @@ class Query
 	}
 
 
+	/**
+	 * Validate the query params
+	 * @return bool
+	 */
 	public function validate()
 	{
 		if (!$this->required_params || empty($this->required_params)) return true;
 
-		$this->validateProperty($this->data, $this->required_params);
+		$this->validate_proprety($this->data, $this->required_params);
 	}
 
-	private function validateProperty($data, $required)
+	private function validate_proprety($data, $required)
 	{
 		// If the value is a string and represents a class
 		if (is_string($required) && class_exists($required)) {

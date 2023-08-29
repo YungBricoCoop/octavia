@@ -26,18 +26,18 @@ class Log
 		$this->log_format = "[%level_name%] %datetime% : %message% %context% %extra%\n";
 		$this->level = $level;
 		$this->max_files = 7;
-		$this->log_dir = $this->getLogDir("logs");
+		$this->log_dir = $this->get_log_dir("logs");
 
 		if ($name_or_logger instanceof Logger) {
 			$this->logger = $name_or_logger;
 		} else {
 			$this->name = $name_or_logger;
 			$this->logger = new Logger($this->name);
-			$this->initializeLogger();
+			$this->init_logger();
 		}
 	}
 
-	private function initializeLogger()
+	private function init_logger()
 	{
 		$formatter = new LineFormatter($this->log_format, $this->date_format, true, true);
 		$rotating_handler = new RotatingFileHandler($this->log_dir . DIRECTORY_SEPARATOR . $this->log_file, $this->max_files, $this->level);
@@ -46,7 +46,7 @@ class Log
 		$this->logger->setHandlers([$rotating_handler]);
 	}
 
-	private function getLogDir($log_dir = null)
+	private function get_log_dir($log_dir = null)
 	{
 		if (!Utils::is_path_absolute($log_dir)) {
 			return dirname($_SERVER["SCRIPT_FILENAME"]) . DIRECTORY_SEPARATOR . $log_dir;
@@ -55,41 +55,41 @@ class Log
 		}
 	}
 
-	public function setLogDir($log_dir)
+	public function set_log_dir($log_dir)
 	{
 
-		$this->log_dir = $this->getLogDir($log_dir);
-		$this->initializeLogger();
+		$this->log_dir = $this->get_log_dir($log_dir);
+		$this->init_logger();
 	}
 
-	public function setLogFile($log_file)
+	public function set_log_file($log_file)
 	{
 		$this->log_file = $log_file;
-		$this->initializeLogger();
+		$this->init_logger();
 	}
 
-	public function setDateFormat($date_format)
+	public function set_date_format($date_format)
 	{
 		$this->date_format = $date_format;
-		$this->initializeLogger();
+		$this->init_logger();
 	}
 
-	public function setLogFormat($log_format)
+	public function set_log_format($log_format)
 	{
 		$this->log_format = $log_format;
-		$this->initializeLogger();
+		$this->init_logger();
 	}
 
-	public function setLevel($level)
+	public function set_level($level)
 	{
 		$this->level = $level;
-		$this->initializeLogger();
+		$this->init_logger();
 	}
 
-	public function setMaxFiles($max_files)
+	public function set_max_files($max_files)
 	{
 		$this->max_files = $max_files;
-		$this->initializeLogger();
+		$this->init_logger();
 	}
 
 

@@ -2,21 +2,21 @@
 
 class CustomException extends Exception
 {
-	protected $statusCode = 200;
+	protected $status_code = 200;
 	protected $detail = null;
 
 	public function __construct($detail = null, $message = null, $code = 0, Exception $previous = null)
 	{
 		$this->detail = $detail;
 		if (is_null($message)) {
-			$message = $this->getMsg();
+			$message = $this->get_msg();
 		}
 		parent::__construct($message, $code, $previous);
 	}
 
 	public function getStatusCode()
 	{
-		return $this->statusCode;
+		return $this->status_code;
 	}
 
 	public function getDetail()
@@ -24,7 +24,7 @@ class CustomException extends Exception
 		return $this->detail;
 	}
 
-	protected function getMsg()
+	protected function get_msg()
 	{
 		return "CUSTOM_EXCEPTION";
 	}
@@ -32,8 +32,8 @@ class CustomException extends Exception
 
 class UnauthorizedException extends CustomException
 {
-	protected $statusCode = 401;
-	protected function getMsg()
+	protected $status_code = 401;
+	protected function get_msg()
 	{
 		return "UNAUTHORIZED";
 	}
@@ -41,8 +41,8 @@ class UnauthorizedException extends CustomException
 
 class ForbiddenException extends CustomException
 {
-	protected $statusCode = 403;
-	protected function getMsg()
+	protected $status_code = 403;
+	protected function get_msg()
 	{
 		return "FORBIDDEN";
 	}
@@ -50,8 +50,8 @@ class ForbiddenException extends CustomException
 
 class NotFoundException extends CustomException
 {
-	protected $statusCode = 404;
-	protected function getMsg()
+	protected $status_code = 404;
+	protected function get_msg()
 	{
 		return "NOT_FOUND";
 	}
@@ -59,8 +59,8 @@ class NotFoundException extends CustomException
 
 class MethodNotAllowedException extends CustomException
 {
-	protected $statusCode = 405;
-	protected function getMsg()
+	protected $status_code = 405;
+	protected function get_msg()
 	{
 		return "METHOD_NOT_ALLOWED";
 	}
@@ -68,8 +68,8 @@ class MethodNotAllowedException extends CustomException
 
 class ConflictException extends CustomException
 {
-	protected $statusCode = 409;
-	protected function getMsg()
+	protected $status_code = 409;
+	protected function get_msg()
 	{
 		return "CONFLICT";
 	}
@@ -77,8 +77,8 @@ class ConflictException extends CustomException
 
 class InternalServerErrorException extends CustomException
 {
-	protected $statusCode = 500;
-	protected function getMsg()
+	protected $status_code = 500;
+	protected function get_msg()
 	{
 		return "INTERNAL_SERVERERROR";
 	}
@@ -86,8 +86,8 @@ class InternalServerErrorException extends CustomException
 
 class MissingQueryParameterException extends CustomException
 {
-	protected $statusCode = 400;
-	protected function getMsg()
+	protected $status_code = 400;
+	protected function get_msg()
 	{
 		return "MISSING_QUERY_PARAMETER";
 	}
@@ -95,8 +95,8 @@ class MissingQueryParameterException extends CustomException
 
 class WrongQueryParameterTypeException extends CustomException
 {
-	protected $statusCode = 400;
-	protected function getMsg()
+	protected $status_code = 400;
+	protected function get_msg()
 	{
 		return "WRONG_QUERY_PARAMETER_TYPE";
 	}
@@ -104,8 +104,8 @@ class WrongQueryParameterTypeException extends CustomException
 
 class MissingBodyParameterException extends CustomException
 {
-	protected $statusCode = 400;
-	protected function getMsg()
+	protected $status_code = 400;
+	protected function get_msg()
 	{
 		return "MISSING BODY PARAMETER";
 	}
@@ -113,8 +113,8 @@ class MissingBodyParameterException extends CustomException
 
 class MissingObjectPropertyException extends CustomException
 {
-	protected $statusCode = 400;
-	protected function getMsg()
+	protected $status_code = 400;
+	protected function get_msg()
 	{
 		return "MISSING_OBJECT_PROPERTY";
 	}
@@ -122,8 +122,8 @@ class MissingObjectPropertyException extends CustomException
 
 class WrongObjectPropertyTypeException extends CustomException
 {
-	protected $statusCode = 400;
-	protected function getMsg()
+	protected $status_code = 400;
+	protected function get_msg()
 	{
 		return "WRONG_OBJECT_PROPERTY_TYPE";
 	}

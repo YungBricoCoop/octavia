@@ -148,6 +148,11 @@ class Utils
 		return $uuid->toString();
 	}
 
+	/**
+	 * Get the extension of a file without the dot
+	 * @param string $file_name
+	 * @return string
+	 */
 	public static function get_file_extension($file_name)
 	{
 		return pathinfo($file_name, PATHINFO_EXTENSION);
