@@ -147,7 +147,7 @@ class RequestHandler
 			throw new NotFoundException();
 		}
 
-		$this->logger->info("[$request->method] /$route->path ($ip)");
+		$this->logger->info("[$request->method] $route->path ($ip)");
 
 		// set the query, body and files
 		$route->query->set_data($request->query_params);
