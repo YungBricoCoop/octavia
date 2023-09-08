@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\YbcFramework\Router;
+namespace Ybc\Octavia\Router;
 
-use Vendor\YbcFramework\Utils\Utils;
+use Ybc\Octavia\Utils\Utils;
 
 use RuntimeException;
 

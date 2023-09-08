@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\YbcFramework\Enums;
+namespace Ybc\Octavia\Enums;
 
 enum HTTPMethods: string
 {

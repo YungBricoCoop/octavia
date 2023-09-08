@@ -1,8 +1,8 @@
 <?php
 
-namespace Vendor\YbcFramework\Router;
+namespace Ybc\Octavia\Router;
 
-use Vendor\YbcFramework\Interfaces\RouteInterface;
+use Ybc\Octavia\Interfaces\RouteInterface;
 
 class Route implements RouteInterface
 {

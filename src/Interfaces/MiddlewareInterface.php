@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\YbcFramework\Interfaces;
+namespace Ybc\Octavia\Interfaces;
 
-use Vendor\YbcFramework\Request;
-use Vendor\YbcFramework\Response;
+use Ybc\Octavia\Request;
+use Ybc\Octavia\Response;
 
 interface MiddlewareInterface
 {

@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\YbcFramework\Middleware;
+namespace Ybc\Octavia\Middleware;
 
-use Vendor\YbcFramework\Interfaces\MiddlewareInterface;
-use Vendor\YbcFramework\Request;
-use Vendor\YbcFramework\Response;
+use Ybc\Octavia\Interfaces\MiddlewareInterface;
+use Ybc\Octavia\Request;
+use Ybc\Octavia\Response;
 
 class JsonMiddleware implements MiddlewareInterface
 {

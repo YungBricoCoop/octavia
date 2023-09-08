@@ -1,5 +1,5 @@
 {
-    "name": "vendor/ybc-framework",
+    "name": "ybc/octavia",
     "description": "A Slim Framework to use as a base for your projects",
     "type": "library",
     "require": {
@@ -9,7 +9,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Vendor\\YbcFramework\\": "src/"
+            "ybc\\octavia\\": "src/"
         }
     },
     "require-dev": {

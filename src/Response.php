@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\YbcFramework;
+namespace Ybc\Octavia;
 
 class Response
 {
