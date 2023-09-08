@@ -1,9 +1,9 @@
 <?php
 
-namespace Ybc\Octavia\Interfaces;
+namespace ybc\octavia\Interfaces;
 
-use Ybc\Octavia\Request;
-use Ybc\Octavia\Response;
+use ybc\octavia\Request;
+use ybc\octavia\Response;
 
 interface MiddlewareInterface
 {

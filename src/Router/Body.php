@@ -1,8 +1,8 @@
 <?php
 
-namespace Ybc\Octavia\Router;
+namespace ybc\octavia\Router;
 
-use Ybc\Octavia\Utils\Utils;
+use ybc\octavia\Utils\Utils;
 use MissingBodyParameterException, MissingObjectPropertyException, WrongObjectPropertyTypeException;
 
 class Body

@@ -1,19 +1,19 @@
 <?php
 
-namespace Ybc\Octavia;
+namespace ybc\octavia;
 
 require_once "Exceptions.php";
 
 use CustomException, ForbiddenException, UnauthorizedException, MethodNotAllowedException, NotFoundException, ConflictException, InternalServerErrorException;
 use Exception;
-use Ybc\Octavia\Interfaces\RouteInterface;
-use Ybc\Octavia\Enums\HTTPMethods;
-use Ybc\Octavia\Router\Router;
-use Ybc\Octavia\Router\Route;
-use Ybc\Octavia\Middleware\MiddlewareHandler;
-use Ybc\Octavia\Middleware\JsonMiddleware;
-use Ybc\Octavia\Utils\Utils;
-use Ybc\Octavia\Utils\Log;
+use ybc\octavia\Interfaces\RouteInterface;
+use ybc\octavia\Enums\HTTPMethods;
+use ybc\octavia\Router\Router;
+use ybc\octavia\Router\Route;
+use ybc\octavia\Middleware\MiddlewareHandler;
+use ybc\octavia\Middleware\JsonMiddleware;
+use ybc\octavia\Utils\Utils;
+use ybc\octavia\Utils\Log;
 
 
 /**

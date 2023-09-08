@@ -1,6 +1,6 @@
 <?php
 
-namespace Ybc\Octavia\Interfaces;
+namespace ybc\octavia\Interfaces;
 
 interface RouteInterface
 {

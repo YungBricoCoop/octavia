@@ -1,6 +1,6 @@
 <?php
 
-namespace Ybc\Octavia;
+namespace ybc\octavia;
 
 class Response
 {

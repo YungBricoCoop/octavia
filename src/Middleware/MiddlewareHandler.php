@@ -1,10 +1,10 @@
 <?php
 
-namespace Ybc\Octavia\Middleware;
+namespace ybc\octavia\Middleware;
 
-use Ybc\Octavia\Interfaces\MiddlewareInterface;
-use Ybc\Octavia\Request;
-use Ybc\Octavia\Response;
+use ybc\octavia\Interfaces\MiddlewareInterface;
+use ybc\octavia\Request;
+use ybc\octavia\Response;
 
 
 class MiddlewareHandler

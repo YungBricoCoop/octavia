@@ -1,6 +1,6 @@
 <?php
 
-namespace Ybc\Octavia\Utils;
+namespace ybc\octavia\Utils;
 
 use Ramsey\Uuid\Uuid;
 
