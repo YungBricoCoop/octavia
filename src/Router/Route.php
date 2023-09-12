@@ -75,6 +75,13 @@ class Route implements RouteInterface
 		return $this;
 	}
 
+	public function validate()
+	{
+		$this->query->validate();
+		$this->body->validate();
+		if ($this->is_upload) $this->upload->validate();
+	}
+
 	public function __toString()
 	{
 		return $this->http_method . "_" . $this->func;

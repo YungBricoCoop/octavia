@@ -168,10 +168,7 @@ class RequestHandler
 		}
 
 		// validate the query, body and files
-		$route->query->validate();
-		$route->body->validate();
-		if ($route->is_upload) $route->upload->validate();
-
+		$route->validate();
 
 		// build the function params
 		$function_params = $route->dynamic_segments_values;
