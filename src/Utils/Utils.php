@@ -157,4 +157,32 @@ class Utils
 	{
 		return pathinfo($file_name, PATHINFO_EXTENSION);
 	}
+
+	/**
+	 * Get the path of the file that called this function
+	 * @param int $level
+	 * @return string The path of the file
+	 */
+	public static function get_path_from_backtrace($level = 0)
+	{
+		$backtrace = debug_backtrace();
+		$path = $backtrace[$level]['file'];
+		return $path;
+	}
+
+	/**
+	 * Get the folder difference between two paths
+	 * @param string $base_path
+	 * @param string $path
+	 * @return string The folder difference or empty string if there is no difference
+	 */
+	public static function extract_folder_diff($base_path, $path)
+	{
+		$remaining_path = str_replace(dirname($base_path), '', $path);
+		$remaining_path = trim($remaining_path, DIRECTORY_SEPARATOR);
+		$remaining_path = str_replace('\\', '/', $remaining_path);
+		$remaining_path = dirname($remaining_path);
+		if ($remaining_path == '.') return '';
+		return '/' . $remaining_path;
+	}
 }

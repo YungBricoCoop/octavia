@@ -8,6 +8,7 @@ class Router
 {
 	/** @var Route[] */
 	private $routes = [];
+	private $prefix = "";
 
 	/**
 	 * Get the route that matches the given path
@@ -69,8 +70,16 @@ class Router
 	 * @param Route $route
 	 * @return Route
 	 */
-	public function register($name, $http_method, $path, $path_segments, $is_upload, $func)
+	public function register($prefix, $name, $http_method, $path, $is_upload, $func)
 	{
+		// add the prefix to the path if it exists
+		if ($prefix) {
+			$path = $prefix . $path;
+		}
+		$path = $this->prefix . $path;
+
+		$path_segments = Utils::get_route_path_segments($path);
+
 		$route = new Route($name, $http_method, $path, $path_segments, $is_upload, $func);
 		$key = $http_method . $path;
 		if (array_key_exists($key, $this->routes)) {
@@ -82,11 +91,11 @@ class Router
 	}
 
 	/**
-	 * Get all the registered routes
-	 * @return Route[]
+	 * Set the prefix for all routes
+	 * @param string $prefix
 	 */
-	public function getRoutes()
+	public function set_prefix($prefix)
 	{
-		return $this->routes;
+		$this->prefix = $prefix;
 	}
 }

@@ -2,8 +2,8 @@
 
 require '../vendor/autoload.php';
 
-use Ybc\Octavia\RequestHandler;
-use Ybc\Octavia\Response;
+use ybc\octavia\RequestHandler;
+use ybc\octavia\Response;
 
 
 class RegisterUser
@@ -21,6 +21,8 @@ class LoginUser
 }
 
 $handler = new RequestHandler();
+
+$handler->set_prefix("/api/v1");
 
 $handler->get("/hello/{name}", function ($name, $q, $b) {
 	return "Hello $name";

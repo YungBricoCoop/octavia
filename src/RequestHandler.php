@@ -30,6 +30,7 @@ class RequestHandler
 	public MiddlewareHandler $middleware_handler;
 	private $user = [];
 	private $response = null;
+	private $base_path = "";
 	public $logger = null;
 
 	/**
@@ -44,6 +45,7 @@ class RequestHandler
 		$this->logger = new Log("RequestHandlerLogger");
 		$this->user = $user;
 		$this->response = new Response();
+		$this->base_path = Utils::get_path_from_backtrace(1);
 	}
 
 	/**
@@ -65,11 +67,12 @@ class RequestHandler
 		// register the route
 		$name = Utils::get_route_name($arguments[0]);
 		$path = $arguments[0];
-		$path_segments = Utils::get_route_path_segments($path);
 
 		$route = null;
 		try {
-			$route = $this->router->register($name, $http_method, $path, $path_segments, false, $func);
+			$prefix_path = Utils::get_path_from_backtrace(1);
+			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
+			$route = $this->router->register($prefix, $name, $http_method, $path, false, $func);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";
@@ -93,11 +96,11 @@ class RequestHandler
 
 		// register the route
 		$name = Utils::get_route_name($path);
-		$path_segments = Utils::get_route_path_segments($path);
-
 		$route = null;
 		try {
-			$route = $this->router->register($name, $http_method, $path, $path_segments, true, $func);
+			$prefix_path = Utils::get_path_from_backtrace(1);
+			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
+			$route = $this->router->register($prefix, $name, $http_method, $path, true, $func);
 			$route->upload->set_params("upload", $allow_multiple_files, $allowed_extensions, $max_size);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
@@ -217,6 +220,15 @@ class RequestHandler
 			$this->response->status_code = 500;
 			$this->response->send();
 		}
+	}
+
+	/**
+	 * Set the prefix for all routes
+	 * @param string $prefix
+	 */
+	public function set_prefix($prefix)
+	{
+		$this->router->set_prefix($prefix);
 	}
 
 	public function set_user($user)

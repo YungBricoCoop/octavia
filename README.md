@@ -13,4 +13,5 @@
 -   [x] Validate request Query params and Body by Class, array of Class, or array of strings, accept optional params
 -   [x] Custom Logger
 -   [x] Middleware support
+-   [x] File system based routing
 -   [ ] Template engine
