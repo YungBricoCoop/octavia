@@ -13,4 +13,4 @@
 -   [x] Middleware support
 -   [x] File system based routing
 -   [ ] Template engine
--   [ ] Session manager
+-   [x] Session manager

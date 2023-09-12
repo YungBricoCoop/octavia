@@ -14,6 +14,7 @@ use ybc\octavia\Middleware\MiddlewareHandler;
 use ybc\octavia\Middleware\JsonMiddleware;
 use ybc\octavia\Utils\Utils;
 use ybc\octavia\Utils\Log;
+use ybc\octavia\Utils\Session;
 
 
 /**
@@ -27,23 +28,24 @@ class RequestHandler
 {
 
 	private Router $router;
-	public MiddlewareHandler $middleware_handler;
-	private $user = [];
-	private $response = null;
+	private Session $session;
+	private ?Response $response = null;
 	private $base_path = "";
-	public $logger = null;
+
+	public MiddlewareHandler $middleware_handler;
+	public ?Log $logger = null;
 
 	/**
 	 * Create a new RequestHandler
-	 * @param array $user The user that is currently logged in
+	 * @param array $session Instance of Session
 	 */
-	public function __construct($user = [])
+	public function __construct($session = null)
 	{
 		$this->router = new Router();
 		$this->middleware_handler = new MiddlewareHandler();
 		$this->middleware_handler->add(new JsonMiddleware());
 		$this->logger = new Log("RequestHandlerLogger");
-		$this->user = $user;
+		$this->session = $session ?? new Session();
 		$this->response = new Response();
 		$this->base_path = Utils::get_path_from_backtrace(1);
 	}
@@ -159,11 +161,11 @@ class RequestHandler
 		if ($route->is_upload) $route->upload->upload();
 
 		// check if the user is logged in and if the user is allowed to access the route
-		if ($route->requires_login && !$this->user) {
+		if ($route->requires_login && !$this->session->is_logged()) {
 			throw new UnauthorizedException();
 		}
 
-		if ($route->requires_admin && !$this->user["is_admin"]) {
+		if ($route->requires_admin && !$this->session->is_admin()) {
 			throw new ForbiddenException();
 		}
 
@@ -174,8 +176,8 @@ class RequestHandler
 		$function_params = $route->dynamic_segments_values;
 		$function_params[] = $route->query;
 		$function_params[] = $route->body;
+		$function_params[] = $this->session;
 		if ($route->upload) $function_params[] = $route->upload->get_uploaded_files();
-		$function_params[] = $this->user;
 
 		// call the route function
 		$result = call_user_func_array($route->func, $function_params);
@@ -226,15 +228,5 @@ class RequestHandler
 	public function set_prefix($prefix)
 	{
 		$this->router->set_prefix($prefix);
-	}
-
-	public function set_user($user)
-	{
-		$this->user = $user;
-	}
-
-	public function get_user()
-	{
-		return $this->user;
 	}
 }
