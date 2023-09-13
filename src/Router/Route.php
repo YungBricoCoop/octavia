@@ -2,7 +2,9 @@
 
 namespace ybc\octavia\Router;
 
+use ybc\octavia\Utils\Utils;
 use ybc\octavia\Interfaces\RouteInterface;
+use WrongPathParameterTypeException;
 
 class Route implements RouteInterface
 {
@@ -10,6 +12,7 @@ class Route implements RouteInterface
 	public $http_method = null;
 	public $path = null;
 	public $path_segments = null;
+	public $dynamic_segments_types = null;
 	public $dynamic_segments_values = [];
 	public $func = null;
 	public ?Upload $upload = null;
@@ -19,12 +22,13 @@ class Route implements RouteInterface
 	public $requires_login = false;
 	public $requires_admin = false;
 
-	public function __construct($name, $http_method, $path, $path_segments, $is_upload, $func)
+	public function __construct($name, $http_method, $path, $path_segments, $dynamic_segments_types, $is_upload, $func)
 	{
 		$this->name = $name;
 		$this->http_method = $http_method;
 		$this->path = $path;
 		$this->path_segments = $path_segments;
+		$this->dynamic_segments_types = $dynamic_segments_types;
 		$this->is_upload = $is_upload;
 		$this->func = $func;
 
@@ -77,6 +81,15 @@ class Route implements RouteInterface
 
 	public function validate()
 	{
+		foreach ($this->dynamic_segments_types as $index => $type) {
+			if (!isset($this->dynamic_segments_values[$index])) continue;
+			$path_param = $this->dynamic_segments_values[$index];
+			$result = Utils::validate_dynamic_param($path_param, $type);
+			if (!$result["is_valid"]) {
+				throw new WrongPathParameterTypeException($result["param"] . ", expected {" . $result["expected_type"] . "} but got {" . $result["actual_type"] . "}");
+			}
+			$this->dynamic_segments_values[$index] = $result["param"];
+		}
 		$this->query->validate();
 		$this->body->validate();
 		if ($this->is_upload) $this->upload->validate();

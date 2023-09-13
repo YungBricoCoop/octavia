@@ -79,8 +79,8 @@ class Router
 		$path = $this->prefix . $path;
 
 		$path_segments = Utils::get_route_path_segments($path);
-
-		$route = new Route($name, $http_method, $path, $path_segments, $is_upload, $func);
+		$dynamic_path_segments_types = Utils::get_route_dynamic_path_segments_types($path_segments);
+		$route = new Route($name, $http_method, $path, $path_segments, $dynamic_path_segments_types, $is_upload, $func);
 		$key = $http_method . $path;
 		if (array_key_exists($key, $this->routes)) {
 			throw new \InvalidArgumentException("ENDPOINT_ALREADY_REGISTERED");

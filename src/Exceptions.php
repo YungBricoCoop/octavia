@@ -128,3 +128,12 @@ class WrongObjectPropertyTypeException extends CustomException
 		return "WRONG_OBJECT_PROPERTY_TYPE";
 	}
 }
+
+class WrongPathParameterTypeException extends CustomException
+{
+	protected $status_code = 400;
+	protected function get_msg()
+	{
+		return "WRONG_PATH_PARAMETER_TYPE";
+	}
+}

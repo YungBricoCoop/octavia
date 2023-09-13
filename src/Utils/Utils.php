@@ -128,6 +128,65 @@ class Utils
 		return $segments;
 	}
 
+	public static function get_route_dynamic_path_segments_types($segments)
+	{
+		// types can only be int or string ex {user:int}
+		$types = [];
+		foreach ($segments as $segment) {
+			if (substr($segment, 0, 1) !== "{" || !str_contains($segment, ":")) {
+				continue;
+			}
+
+			$segment = substr($segment, 1, -1);
+			$segment = explode(":", $segment);
+			$type = $segment[1];
+			if ($type !== "int" && $type !== "string") {
+				continue;
+			}
+			$types[] = $type;
+		}
+		return empty($types) ? null : $types;
+	}
+
+	/**
+	 * Validate a single dynamic param
+	 * @param mixed $param
+	 * @param string $type
+	 * @return array [string $param, bool $is_valid, string $expected_type, string $actual_type]
+	 */
+	public static function validate_dynamic_param($param, $type)
+	{
+		$result = [
+			"param" => $param,
+			"is_valid" => true,
+			"expected_type" => $type,
+			"actual_type" => gettype($param),
+		];
+
+		if ($type !== "int" && $type !== "string") {
+			return $result;
+		}
+
+		if ($type === "int" && !is_numeric($param)) {
+			$result["is_valid"] = false;
+			return $result;
+		}
+
+		if (($type === "string" && !is_string($param)) || ($type === "string" && is_numeric($param))) {
+			$result["is_valid"] = false;
+			return $result;
+		}
+
+		if ($type === "int" && is_numeric($param)) {
+			$param = (int) $param;
+			$result["param"] = $param;
+			$result["actual_type"] = gettype($param);
+			return $result;
+		}
+
+		return $result;
+	}
+
 	/**
 	 * Check if a path is absolute
 	 * @param string $path
