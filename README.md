@@ -1,12 +1,12 @@
 # Octavia
 
+<p align="center" style="margin-top: 30px; margin-bottom: 30px;">
+  <img src="assets/logo.svg" alt="LOGO_ALT_TEXT" width="140px">
+</p>
+
 **TLDR** : Octavia is a sleek and efficient **PHP** framework designed to simplify the creation of APIs.
 
 > Inspired by the simplicity of [FastAPI](https://fastapi.tiangolo.com/), Octavia provides a straightforward and intuitive approach to API development, making it accessible for beginners while still powerful enough for experienced developers.
-
-<p align="center">
-  <img src="assets/logo.svg" alt="LOGO_ALT_TEXT" width="140px">
-</p>
 
 ## ⭐ Features
 
