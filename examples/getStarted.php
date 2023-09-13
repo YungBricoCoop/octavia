@@ -5,6 +5,12 @@ require '../vendor/autoload.php';
 use ybc\octavia\RequestHandler;
 use ybc\octavia\Response;
 
+/**
+ * ROUTES:
+ * GET /api/v1/hello/{name}
+ * POST /api/v1/register
+ * POST /api/v1/login
+ */
 
 class RegisterUser
 {

@@ -4,6 +4,12 @@ require '../../vendor/autoload.php';
 
 use ybc\octavia\RequestHandler;
 
+/**
+ * ROUTES:
+ * GET /api/v1
+ * GET /api/v1/auth/login
+ * GET /api/v1/auth/register
+ */
 
 $handler = new RequestHandler();
 $handler->set_prefix("/api/v1");
@@ -15,12 +21,7 @@ $handler->get("/", function ($q, $b) {
 	return "Hello World";
 });
 
-/**
- * Now we can access the following routes:
- * GET /api/v1
- * GET /api/v1/auth/login
- * GET /api/v1/auth/register
- */
+
 
 
 $handler->handle_request();
