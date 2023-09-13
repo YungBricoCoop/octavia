@@ -5,7 +5,8 @@
     "require": {
         "php": "^7.4|^8.1",
         "monolog/monolog": "^3.4",
-        "ramsey/uuid": "^4.7"
+        "ramsey/uuid": "^4.7",
+        "twig/twig": "^3.7"
     },
     "autoload": {
         "psr-4": {

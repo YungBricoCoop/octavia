@@ -12,5 +12,5 @@
 -   [x] Custom Logger
 -   [x] Middleware support
 -   [x] File system based routing
--   [ ] Template engine
+-   [x] Template engine
 -   [x] Session manager
