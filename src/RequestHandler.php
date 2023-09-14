@@ -6,7 +6,7 @@ require_once "Exceptions.php";
 
 use CustomException, ForbiddenException, UnauthorizedException, MethodNotAllowedException, NotFoundException, ConflictException, InternalServerErrorException;
 use Exception;
-use ybc\octavia\Interfaces\RouteInterface;
+use ybc\octavia\Interfaces\RequestHandlerInterface;
 use ybc\octavia\Enums\HTTPMethods;
 use ybc\octavia\Router\Router;
 use ybc\octavia\Router\Route;
@@ -16,15 +16,7 @@ use ybc\octavia\Utils\Utils;
 use ybc\octavia\Utils\Log;
 use ybc\octavia\Utils\Session;
 
-
-/**
- * @method RouteInterface get(string $route, callable $callback = null)
- * @method RouteInterface post(string $route, callable $callback = null)
- * @method RouteInterface put(string $route, callable $callback = null)
- * @method RouteInterface delete(string $route, callable $callback = null)
- * @method RouteInterface patch(string $route, callable $callback = null)
- */
-class RequestHandler
+class RequestHandler implements RequestHandlerInterface
 {
 
 	private Router $router;
@@ -51,25 +43,121 @@ class RequestHandler
 	}
 
 	/**
-	 * Register a new route
+	 * Register a GET route
+	 * @param string $path The path of the route
+	 * @param callable $callback Callback function
 	 * @return Route
 	 */
-	public function __call($name, $arguments)
+	public function get(string $path, callable $func): Route
 	{
-		$http_methods = array_column(HTTPMethods::cases(), 'name');
-		$http_method = strtoupper($name);
-		// check if the method is allowed, by key
-		if (!in_array($http_method, $http_methods)) {
-			//TODO: Throw exception
-			return;
-		}
+		return $this->register_route(HTTPMethods::GET->value, $path, $func);
+	}
 
-		$func = $arguments[1] ?? null;
+	/**
+	 * Register a POST route
+	 * @param string $path The path of the route
+	 * @param callable $callback Callback function
+	 * @return Route
+	 */
+	public function post(string $path, callable $func): Route
+	{
+		return $this->register_route(HTTPMethods::POST->value, $path, $func);
+	}
+
+	/**
+	 * Register a PUT route
+	 * @param string $path The path of the route
+	 * @param callable $callback Callback function
+	 * @return Route
+	 */
+	public function put(string $path, callable $func): Route
+	{
+		return $this->register_route(HTTPMethods::PUT->value, $path, $func);
+	}
+
+	/**
+	 * Register a DELETE route
+	 * @param string $path The path of the route
+	 * @param callable $callback Callback function
+	 * @return Route
+	 */
+	public function delete(string $path, callable $func): Route
+	{
+		return $this->register_route(HTTPMethods::DELETE->value, $path, $func);
+	}
+
+	/**
+	 * Register a PATCH route
+	 * @param string $path The path of the route
+	 * @param callable $callback Callback function
+	 * @return Route
+	 */
+	public function patch(string $path, callable $func): Route
+	{
+		return $this->register_route(HTTPMethods::PATCH->value, $path, $func);
+	}
+
+	/**
+	 * Register a OPTIONS route
+	 * @param string $path The path of the route
+	 * @param callable $callback Callback function
+	 * @return Route
+	 */
+	public function options(string $path, callable $func): Route
+	{
+		return $this->register_route(HTTPMethods::OPTIONS->value, $path, $func);
+	}
+
+	/**
+	 * Register a HEAD route
+	 * @param string $path The path of the route
+	 * @param callable $callback Callback function
+	 * @return Route
+	 */
+	public function head(string $path, callable $func): Route
+	{
+		return $this->register_route(HTTPMethods::HEAD->value, $path, $func);
+	}
+
+	/**
+	 * Handle file(s) upload
+	 * @param string $path The path of the route
+	 * @param callable $func Callback function
+	 * @param bool $allow_multiple_files Allow multiple files to be uploaded
+	 * @param array $allowed_extensions Allowed file extensions
+	 * @param int $max_size Max file size in bytes
+	 * @return Route
+	 */
+	public function upload(string $path, callable $func, bool $allow_multiple_files = true, array $allowed_extensions = [], int $max_size = 0): Route
+	{
+		$http_method = HTTPMethods::POST->value;
 
 		// register the route
-		$name = Utils::get_route_name($arguments[0]);
-		$path = $arguments[0];
+		$name = Utils::get_route_name($path);
+		$route = null;
+		try {
+			$prefix_path = Utils::get_path_from_backtrace(1);
+			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
+			$route = $this->router->register($prefix, $name, $http_method, $path, true, $func);
+			$route->upload->set_params("upload", $allow_multiple_files, $allowed_extensions, $max_size);
+		} catch (Exception $e) {
+			$this->logger->error($e->getMessage(), $e->getTrace());
+			$this->response->data = "INTERNAL_SERVER_ERROR";
+		}
 
+		return $route;
+	}
+
+	/**
+	 * Register a new route
+	 * @param string $http_method The http method of the route
+	 * @param string $path The path of the route
+	 * @return Route
+	 */
+	private function register_route(string $http_method, string $path, callable $func): Route
+	{
+		// register the route
+		$name = Utils::get_route_name($path);
 		$route = null;
 		try {
 			$prefix_path = Utils::get_path_from_backtrace(1);
@@ -84,40 +172,8 @@ class RequestHandler
 	}
 
 	/**
-	 * Handle file(s) upload
-	 * @param string $path The path of the route
-	 * @param callable $func Callback function
-	 * @param bool $allow_multiple_files Allow multiple files to be uploaded
-	 * @param array $allowed_extensions Allowed file extensions
-	 * @param int $max_size Max file size in bytes
-	 * @return Route
-	 */
-	public function upload($path, $func, $allow_multiple_files = true, $allowed_extensions = [], $max_size = 0)
-	{
-		$http_method = HTTPMethods::POST->value;
-
-		// register the route
-		$name = Utils::get_route_name($path);
-		$route = null;
-		try {
-			$prefix_path = Utils::get_path_from_backtrace(1);
-			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
-			$route = $this->router->register($prefix, $name, $http_method, $path, true, $func);
-			$route->upload->set_params("upload", $allow_multiple_files, $allowed_extensions, $max_size);
-		} catch (Exception $e) {
-			$this->logger->error($e->getMessage(), $e->getTrace());
-			$this->response(null, "INTERNAL_SERVER_ERROR", 500);
-		}
-
-		return $route;
-	}
-
-	/**
 	 * Handle the request
-	 * Returns 404 if the route is not found
-	 * Returns 401 if the route requires login and the user is not logged in
-	 * Returns 403 if the user is not allowed to access the route
-	 * Calls the route function if the route is found and the user is allowed to access it
+	 * @return void, 404 if the route is not found, 401 if the user is not logged in, 403 if the user is not an admin, 500 if an error occurs
 	 */
 	public function handle_request()
 	{

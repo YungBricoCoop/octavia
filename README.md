@@ -66,3 +66,4 @@ Here is more examples:
 -   [x] File system based routing
 -   [x] Template engine
 -   [x] Session manager
+-   [ ] Improve security
