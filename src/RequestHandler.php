@@ -160,7 +160,7 @@ class RequestHandler implements RequestHandlerInterface
 		$name = Utils::get_route_name($path);
 		$route = null;
 		try {
-			$prefix_path = Utils::get_path_from_backtrace(1);
+			$prefix_path = Utils::get_path_from_backtrace(2);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
 			$route = $this->router->register($prefix, $name, $http_method, $path, false, $func);
 		} catch (Exception $e) {
