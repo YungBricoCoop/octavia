@@ -29,13 +29,15 @@ class Upload
 		}
 
 		for ($i = 0; $i < $file_count; $i++) {
+			$error = $this->files['error'][$i];
+
 			// Check for upload errors
-			if ($this->files['error'][$i] !== UPLOAD_ERR_OK) {
+			if ($error !== UPLOAD_ERR_OK && $error !== UPLOAD_ERR_INI_SIZE && $error !== UPLOAD_ERR_FORM_SIZE) {
 				throw new FileUploadErrorException();
 			}
 
 			// Validate file size
-			if ($this->max_file_size > 0 && $this->files['size'][$i] > $this->max_file_size) {
+			if ($error === UPLOAD_ERR_INI_SIZE || $error === UPLOAD_ERR_FORM_SIZE || $this->files['size'][$i] > $this->max_file_size) {
 				throw new FileSizeExceededException("File size exceeds {$this->max_file_size} bytes.");
 			}
 
@@ -94,7 +96,14 @@ class Upload
 		$this->upload_dir = $upload_dir;
 		$this->allow_multiple_files = $allow_multiple_files;
 		$this->allowed_extensions = $allowed_extensions;
-		$this->max_file_size = $max_file_size;
+
+		// get the max file size from php.ini if it's not set
+		$ini_max_upload_size = Utils::convert_to_bytes(ini_get('upload_max_filesize'));
+		$ini_post_max_size = Utils::convert_to_bytes(ini_get('post_max_size'));
+		$ini_memory_limit = Utils::convert_to_bytes(ini_get('memory_limit'));
+		$ini_max_upload_size = min($ini_max_upload_size, $ini_post_max_size, $ini_memory_limit);
+
+		$this->max_file_size = $max_file_size && $max_file_size <= $ini_max_upload_size ? $max_file_size : $ini_max_upload_size;
 	}
 
 	/**

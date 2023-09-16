@@ -244,4 +244,26 @@ class Utils
 		if ($remaining_path == '.') return '';
 		return '/' . $remaining_path;
 	}
+
+	/**
+	 * Convert a size string to bytes
+	 * @param string $size_str
+	 * @return int
+	 */
+	public static function convert_to_bytes($size_str)
+	{
+		switch (substr($size_str, -1)) {
+			case 'M':
+			case 'm':
+				return (int)$size_str * 1048576;
+			case 'K':
+			case 'k':
+				return (int)$size_str * 1024;
+			case 'G':
+			case 'g':
+				return (int)$size_str * 1073741824;
+			default:
+				return $size_str;
+		}
+	}
 }
