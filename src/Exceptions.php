@@ -137,3 +137,43 @@ class WrongPathParameterTypeException extends CustomException
 		return "WRONG_PATH_PARAMETER_TYPE";
 	}
 }
+
+class MultipleFilesNotAllowedException extends CustomException
+{
+	protected $status_code = 400;
+
+	protected function get_msg()
+	{
+		return "MULTIPLE_FILES_NOT_ALLOWED";
+	}
+}
+
+class FileUploadErrorException extends CustomException
+{
+	protected $status_code = 400;
+
+	protected function get_msg()
+	{
+		return "FILE_UPLOAD_ERROR";
+	}
+}
+
+class FileSizeExceededException extends CustomException
+{
+	protected $status_code = 400;
+
+	protected function get_msg()
+	{
+		return "FILE_SIZE_EXCEEDED";
+	}
+}
+
+class FileTypeNotAllowedException extends CustomException
+{
+	protected $status_code = 400;
+
+	protected function get_msg()
+	{
+		return "FILE_TYPE_NOT_ALLOWED";
+	}
+}

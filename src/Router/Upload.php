@@ -3,10 +3,8 @@
 namespace ybc\octavia\Router;
 
 use ybc\octavia\Utils\Utils;
+use MultipleFilesNotAllowedException, FileUploadErrorException, FileSizeExceededException, FileTypeNotAllowedException;
 
-use RuntimeException;
-
-//TODO: Create upload dir if it does'nt exist
 class Upload
 {
 	private $files;
@@ -23,29 +21,28 @@ class Upload
 	 */
 	public function validate()
 	{
-		//TODO: Throw custom exceptions
 		$file_count = count($this->files['name']);
 
 		// Check if multiple files are uploaded without permission
 		if (!$this->allow_multiple_files && $file_count > 1) {
-			throw new RuntimeException("Multiple file uploads not allowed.");
+			throw new MultipleFilesNotAllowedException();
 		}
 
 		for ($i = 0; $i < $file_count; $i++) {
 			// Check for upload errors
 			if ($this->files['error'][$i] !== UPLOAD_ERR_OK) {
-				throw new RuntimeException("File upload error: " . $this->files['error'][$i]);
+				throw new FileUploadErrorException();
 			}
 
 			// Validate file size
 			if ($this->max_file_size > 0 && $this->files['size'][$i] > $this->max_file_size) {
-				throw new RuntimeException("File size exceeds the allowed limit.");
+				throw new FileSizeExceededException("File size exceeds {$this->max_file_size} bytes.");
 			}
 
 			// Validate file extension
 			$ext = pathinfo($this->files['name'][$i], PATHINFO_EXTENSION);
 			if (!empty($this->allowed_extensions) && !in_array($ext, $this->allowed_extensions)) {
-				throw new RuntimeException("File type {$ext} is not allowed.");
+				throw new FileTypeNotAllowedException("File type not allowed. Allowed types: " . implode(", ", $this->allowed_extensions) . ".");
 			}
 		}
 
@@ -90,6 +87,10 @@ class Upload
 	 */
 	public function set_params($upload_dir, $allow_multiple_files, $allowed_extensions, $max_file_size)
 	{
+		// create directory if it doesn't exist
+		if (!file_exists($upload_dir)) {
+			mkdir($upload_dir, 0777, true);
+		}
 		$this->upload_dir = $upload_dir;
 		$this->allow_multiple_files = $allow_multiple_files;
 		$this->allowed_extensions = $allowed_extensions;
