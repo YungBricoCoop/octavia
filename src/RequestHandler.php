@@ -125,10 +125,11 @@ class RequestHandler implements RequestHandlerInterface
 	 * @param callable $func Callback function
 	 * @param bool $allow_multiple_files Allow multiple files to be uploaded
 	 * @param array $allowed_extensions Allowed file extensions
-	 * @param int $max_size Max file size in bytes
+	 * @param string $max_size Max file size
+	 * @example $router->upload("/upload", function($query, $body, $session, $files) { echo "Upload page"; }, true, ["jpg", "png"], "10MB");
 	 * @return Route
 	 */
-	public function upload(string $path, callable $func, bool $allow_multiple_files = true, array $allowed_extensions = [], int $max_size = 0): Route
+	public function upload(string $path, callable $func, bool $allow_multiple_files = true, array $allowed_extensions = [], string $max_size = null): Route
 	{
 		$http_method = HTTPMethods::POST->value;
 

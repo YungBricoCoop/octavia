@@ -83,8 +83,8 @@ class Upload
 	 * @param string $upload_dir The upload directory
 	 * @param bool $allow_multiple_files If multiple files are allowed
 	 * @param array $allowed_extensions The allowed extensions
-	 * @param int $max_file_size The max file size in bytes
-	 * @example set_params("uploads", true, ["jpg", "png"], 1000000)
+	 * @param string $max_file_size The max file size
+	 * @example set_params("uploads", true, ["jpg", "png"], 10MB)
 	 * @return void
 	 */
 	public function set_params($upload_dir, $allow_multiple_files, $allowed_extensions, $max_file_size)
@@ -98,6 +98,7 @@ class Upload
 		$this->allowed_extensions = $allowed_extensions;
 
 		// get the max file size from php.ini if it's not set
+		$max_file_size = Utils::convert_to_bytes($max_file_size);
 		$ini_max_upload_size = Utils::convert_to_bytes(ini_get('upload_max_filesize'));
 		$ini_post_max_size = Utils::convert_to_bytes(ini_get('post_max_size'));
 		$ini_memory_limit = Utils::convert_to_bytes(ini_get('memory_limit'));

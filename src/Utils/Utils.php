@@ -252,7 +252,11 @@ class Utils
 	 */
 	public static function convert_to_bytes($size_str)
 	{
-		switch (substr($size_str, -1)) {
+		if (!$size_str) return 0;
+		$size_str = strtolower($size_str);
+		if (str_contains($size_str, 'b')) $size_str = str_replace('b', '', $size_str);
+		$prefix = substr($size_str, -1);
+		switch ($prefix) {
 			case 'M':
 			case 'm':
 				return (int)$size_str * 1048576;
@@ -263,7 +267,7 @@ class Utils
 			case 'g':
 				return (int)$size_str * 1073741824;
 			default:
-				return $size_str;
+				return 0;
 		}
 	}
 }
