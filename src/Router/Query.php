@@ -18,7 +18,9 @@ class Query
 
 
 	/**
-	 * Validate the query params
+	 * Validate all the query params
+	 * @throws MissingQueryParameterException
+	 * @throws WrongQueryParameterTypeException
 	 * @return bool
 	 */
 	public function validate()
@@ -62,11 +64,21 @@ class Query
 		return $this->data[$key] ?? null;
 	}
 
+	/**
+	 * Set the input query data
+	 * @param array $data
+	 * @return void
+	 */
 	public function set_data($data)
 	{
 		$this->data = $data;
 	}
 
+	/**
+	 * Set the required params
+	 * @param array $required_params
+	 * @return void
+	 */
 	public function set_required_params($required_params)
 	{
 		$this->required_params = $required_params;

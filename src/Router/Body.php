@@ -17,7 +17,10 @@ class Body
 	}
 
 	/**
-	 * Validate the body params
+	 * Validate all the body params
+	 * @throws MissingBodyParameterException
+	 * @throws MissingObjectPropertyException
+	 * @throws WrongObjectPropertyTypeException
 	 * @return bool
 	 */
 	public function validate()
@@ -66,11 +69,21 @@ class Body
 		return $this->data[$key] ?? null;
 	}
 
+	/**
+	 * Set the input body data
+	 * @param array $data
+	 * @return void
+	 */
 	public function set_data($data)
 	{
 		$this->data = $data;
 	}
 
+	/**
+	 * Set the required body
+	 * @param array $required_body
+	 * @return void
+	 */
 	public function set_required_body($required_body)
 	{
 		$this->required_body = $required_body;

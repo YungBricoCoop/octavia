@@ -16,6 +16,7 @@ class Response
 
 	/**
 	 * Send the response to the client
+	 * The data type is determined by the middleware
 	 * @return void
 	 */
 	public function send()

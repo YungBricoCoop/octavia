@@ -23,6 +23,7 @@ class Upload
 	 */
 	public function validate()
 	{
+		//TODO: Throw custom exceptions
 		$file_count = count($this->files['name']);
 
 		// Check if multiple files are uploaded without permission
@@ -51,6 +52,10 @@ class Upload
 		return $this->uploaded_files;
 	}
 
+	/**
+	 * Validate and move the files to the upload directory
+	 * @return bool
+	 */
 	public function upload()
 	{
 		$this->validate();
@@ -65,11 +70,24 @@ class Upload
 		return true;
 	}
 
+	/**
+	 * Get all the uploaded files
+	 * @return array
+	 */
 	public function get_uploaded_files()
 	{
 		return $this->uploaded_files;
 	}
 
+	/**
+	 * Set the upload params
+	 * @param string $upload_dir The upload directory
+	 * @param bool $allow_multiple_files If multiple files are allowed
+	 * @param array $allowed_extensions The allowed extensions
+	 * @param int $max_file_size The max file size in bytes
+	 * @example set_params("uploads", true, ["jpg", "png"], 1000000)
+	 * @return void
+	 */
 	public function set_params($upload_dir, $allow_multiple_files, $allowed_extensions, $max_file_size)
 	{
 		$this->upload_dir = $upload_dir;
@@ -78,6 +96,12 @@ class Upload
 		$this->max_file_size = $max_file_size;
 	}
 
+	/**
+	 * Set the fill that are uploaded
+	 * @param array $files
+	 * @example set_files($_FILES)
+	 * @return void
+	 */
 	public function set_files($files)
 	{
 		// Handle if one or multiple files are uploaded

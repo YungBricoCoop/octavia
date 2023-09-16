@@ -19,12 +19,6 @@ class Router
 	 */
 	public function route($http_method, $route_path)
 	{
-		/* INFO: This code is in comments because I think it could break the order priority of the routes
-		// if the route does not use dynamic variables, we can directly find it
-		if (array_key_exists($key, $this->routes)) {
-			return $this->routes[$key];
-		} */
-
 		// match routes by number of segments
 		$segments = Utils::get_route_path_segments($route_path);
 		/** * @var Route[] */
@@ -67,10 +61,17 @@ class Router
 
 	/**
 	 * Register a new route
-	 * @param Route $route
+	 * @param string $prefix The prefix of the route
+	 * @param string $name The name of the route
+	 * @param string $http_method The http method
+	 * @param string $path The path of the route
+	 * @param bool $is_upload If the route is an upload route
+	 * @param callable $callback The callback of the route
+	 * @throws \InvalidArgumentException
+	 * @example $router->register("", "home", "GET", "/", false, function() { echo "Home page"; });
 	 * @return Route
 	 */
-	public function register($prefix, $name, $http_method, $path, $is_upload, $func)
+	public function register($prefix, $name, $http_method, $path, $is_upload, $callback)
 	{
 		// add the prefix to the path if it exists
 		if ($prefix) {
@@ -80,12 +81,11 @@ class Router
 
 		$path_segments = Utils::get_route_path_segments($path);
 		$dynamic_path_segments_types = Utils::get_route_dynamic_path_segments_types($path_segments);
-		$route = new Route($name, $http_method, $path, $path_segments, $dynamic_path_segments_types, $is_upload, $func);
+		$route = new Route($name, $http_method, $path, $path_segments, $dynamic_path_segments_types, $is_upload, $callback);
 		$key = $http_method . $path;
 		if (array_key_exists($key, $this->routes)) {
 			throw new \InvalidArgumentException("ENDPOINT_ALREADY_REGISTERED");
 		}
-		//INFO: Might need to check segments without dynamic variables to avoid conflicts
 		$this->routes[$key] = $route;
 		return $route;
 	}

@@ -4,7 +4,14 @@ namespace ybc\octavia\Router;
 
 use ybc\octavia\Utils\Utils;
 use ybc\octavia\Interfaces\RouteInterface;
+
 use WrongPathParameterTypeException;
+use MissingBodyParameterException;
+use MissingQueryParameterException;
+use WrongQueryParameterTypeException;
+use MissingObjectPropertyException;
+use WrongObjectPropertyTypeException;
+
 
 class Route implements RouteInterface
 {
@@ -79,6 +86,16 @@ class Route implements RouteInterface
 		return $this;
 	}
 
+	/**
+	 * Validate the body, query and upload params
+	 * @throws MissingBodyParameterException
+	 * @throws MissingQueryParameterException
+	 * @throws WrongQueryParameterTypeException
+	 * @throws WrongPathParameterTypeException
+	 * @throws MissingObjectPropertyException
+	 * @throws WrongObjectPropertyTypeException
+	 * @return void
+	 */
 	public function validate()
 	{
 		foreach ($this->dynamic_segments_types as $index => $type) {

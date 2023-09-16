@@ -17,12 +17,27 @@ class Templater
 		$this->twig = new Environment($loader);
 	}
 
+	/**
+	 * Render a template from a string
+	 * @param string $string
+	 * @param array $params
+	 * @example $templater->render_from_string("{{ name }} kon {{kru}}", ["name" => "Octavia", "kru" => "Skaikru"]);
+	 * @return string
+	 */
 	public function render_from_string($string, $params)
 	{
 		$template = $this->twig->createTemplate($string);
 		return $template->render($params);
 	}
 
+	/**
+	 * Render a template from a file
+	 * The file must be in the template directory
+	 * @param string $file
+	 * @param array $params
+	 * @example $templater->render_from_file("index.html", ["name" => "Octavia", "kru" => "Skaikru"]);
+	 * @return string
+	 */
 	public function render_from_file($file, $params)
 	{
 		return $this->twig->render($file, $params);
