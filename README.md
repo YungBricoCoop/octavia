@@ -51,6 +51,7 @@ Here is more examples:
 -   [Get started](examples/getStarted.php) - A simple example showcasing the basic features of Octavia (Query and body parameters validation).
 -   [File system based routing](examples/fileSystemRouting) - Showcase how to use file system based routing.
 -   [Session](examples/session) - Showcase how to use session manager (Basic user login/logout).
+-   [Upload](examples/upload) - Showcase how to upload files.
 
 ## 📝 Todo
 
