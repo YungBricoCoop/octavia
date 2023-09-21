@@ -22,6 +22,32 @@
 
 ## 🚀 Quickstart
 
+## 🤖 How does it work?
+
+The framework is based on a `RequestHandler` object that will register the routes and handle the incoming requests.
+You can register a route by calling the `get`, `post`, `put`, `patch`, `delete`, `options`, `head`, `upload` methods of the `RequestHandler` object. 
+
+### Callback parameters order
+
+1. **Path Parameters**: Captured from the route (if any)
+2. **Query (`$q`)**: Parameters after the ? in the URL.
+3. **Body (`$b`)**: Data from the request body.
+4. **Session (`$s`)**: Session variables.
+5. **Files(`$f`)**: Array of uploaded files (if any).
+
+Callbacks will always be called with a minimum of 3 parameters: `$q`, `$b`, `$s`.
+
+**Example**:  /say_hello/{name:string}?age=20
+
+```php
+($name, $q, $b, $s) => {return "Hello " . $name . " you are " . $q->age . " years old";}
+```
+
+
+### Middleware
+
+By default the `JsonMiddleware` is used to parse the request body and set the response with the correct headers. The middlewares have an `handle_before` and `handle_after` method that will be called before and after the route function.
+
 ## 📋 Examples
 
 Here is a simple example of an Octavia application:
