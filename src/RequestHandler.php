@@ -139,8 +139,34 @@ class RequestHandler implements RequestHandlerInterface
 		try {
 			$prefix_path = Utils::get_path_from_backtrace(1);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
-			$route = $this->router->register($prefix, $name, $http_method, $path, true, $func);
+			$route = $this->router->register($prefix, $name, $http_method, $path, true, false, $func);
 			$route->upload->set_params("upload", $allow_multiple_files, $allowed_extensions, $max_size);
+		} catch (Exception $e) {
+			$this->logger->error($e->getMessage(), $e->getTrace());
+			$this->response->data = "INTERNAL_SERVER_ERROR";
+		}
+
+		return $route;
+	}
+
+	/**
+	 * Handle health check
+	 * @param string $path The path of the route
+	 * @param callable $func Callback function
+	 * @example $router->health("/health", function($query, $body, $session) { return Health::HEALTHY; });
+	 * @return Route
+	 */
+	public function health(string $path, callable $func): Route
+	{
+		$http_method = HTTPMethods::GET->value;
+
+		// register the route
+		$name = Utils::get_route_name($path);
+		$route = null;
+		try {
+			$prefix_path = Utils::get_path_from_backtrace(1);
+			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
+			$route = $this->router->register($prefix, $name, $http_method, $path, false, true, $func);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";
@@ -163,7 +189,7 @@ class RequestHandler implements RequestHandlerInterface
 		try {
 			$prefix_path = Utils::get_path_from_backtrace(2);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
-			$route = $this->router->register($prefix, $name, $http_method, $path, false, $func);
+			$route = $this->router->register($prefix, $name, $http_method, $path, false, false, $func);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";
@@ -235,6 +261,7 @@ class RequestHandler implements RequestHandlerInterface
 		$function_params[] = $route->body;
 		$function_params[] = $this->session;
 		if ($route->upload) $function_params[] = $route->upload->get_uploaded_files();
+
 
 		// call the route function
 		$result = call_user_func_array($route->func, $function_params);

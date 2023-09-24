@@ -26,10 +26,11 @@ class Route implements RouteInterface
 	public ?Query $query = null;
 	public ?Body $body = null;
 	public $is_upload = false;
+	public $is_health = false;
 	public $requires_login = false;
 	public $requires_admin = false;
 
-	public function __construct($name, $http_method, $path, $path_segments, $dynamic_segments_types, $is_upload, $func)
+	public function __construct($name, $http_method, $path, $path_segments, $dynamic_segments_types, $is_upload, $is_health, $func)
 	{
 		$this->name = $name;
 		$this->http_method = $http_method;
@@ -37,6 +38,7 @@ class Route implements RouteInterface
 		$this->path_segments = $path_segments;
 		$this->dynamic_segments_types = $dynamic_segments_types;
 		$this->is_upload = $is_upload;
+		$this->is_health = $is_health;
 		$this->func = $func;
 
 		$this->query = new Query();
