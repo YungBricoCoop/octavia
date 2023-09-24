@@ -43,10 +43,51 @@ Callbacks will always be called with a minimum of 3 parameters: `$q`, `$b`, `$s`
 ($name, $q, $b, $s) => {return "Hello " . $name . " you are " . $q->age . " years old";}
 ```
 
+### Type/Object/File validation
+
+#### Path parameters
+You can validate the type of a path parameter by adding the type after the parameter name. The supported types are: `int`, `string`. Example: `/say_hello/{name:string}`, `/say_hello/{age:int}`.
+
+#### Query parameters
+You can validate the query params by giving an array of strings `["age", "name"]` or a class. An array of string can only be used to verifiy if the params are present, but it will not check their type. To validate the types of multiple query parameters use a `Class``. If we want to validate the query parameters `age` and `name` we can do it like this:
+```php
+class User
+{
+	public string $name;
+	public int $age;
+}
+```
 
 ### Middleware
 
 By default the `JsonMiddleware` is used to parse the request body and set the response with the correct headers. The middlewares have an `handle_before` and `handle_after` method that will be called before and after the route function.
+
+Middlewares can be registered by calling the `$handler->middleware_handler->add()` method. The middleware must implements the `MiddlewareInterface` interface to be valid.
+
+Here is to declare a middleware:
+
+```php
+use ybc\octavia\Interfaces\MiddlewareInterface;
+use ybc\octavia\Request;
+use ybc\octavia\Response;
+
+class JsonMiddleware implements MiddlewareInterface
+{
+	public function handle_before(Request $request)
+	{
+		$request->body = json_decode(file_get_contents('php://input'), true);
+		return $request;
+	}
+
+	public function handle_after(Response $response)
+	{
+		$response->data = json_encode(["data" => $response->data]);
+		$response->headers['Content-Type'] =  'application/json';
+
+		return $response;
+	}
+}
+```
 
 ## 📋 Examples
 
