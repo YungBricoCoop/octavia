@@ -135,7 +135,7 @@ Here is more examples:
 -   [x] Template engine
 -   [x] Session manager
 -   [ ] Improve security
--   [ ] Health check endpoint
+-   [ ] Health check endpoint, md5 digest auth
 
 ## 📈 Stats
 [![wakatime](https://wakatime.com/badge/user/ee872f10-6167-41c6-8aad-e80d7519df4c/project/dfd2622d-4d56-45f0-bdff-1c14002e441a.svg?style=for-the-badge)](https://wakatime.com/badge/user/ee872f10-6167-41c6-8aad-e80d7519df4c/project/dfd2622d-4d56-45f0-bdff-1c14002e441a)
