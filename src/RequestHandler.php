@@ -7,7 +7,6 @@ require_once "Exceptions.php";
 use CustomException, ForbiddenException, UnauthorizedException, MethodNotAllowedException, NotFoundException, ConflictException, InternalServerErrorException;
 use Exception;
 use ybc\octavia\Interfaces\RequestHandlerInterface;
-use ybc\octavia\Enums\HTTPMethods;
 use ybc\octavia\Router\Router;
 use ybc\octavia\Router\Route;
 use ybc\octavia\Middleware\MiddlewareHandler;
@@ -15,6 +14,7 @@ use ybc\octavia\Middleware\JsonMiddleware;
 use ybc\octavia\Utils\Utils;
 use ybc\octavia\Utils\Log;
 use ybc\octavia\Utils\Session;
+use ybc\octavia\Methods;
 
 class RequestHandler implements RequestHandlerInterface
 {
@@ -50,7 +50,7 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function get(string $path, callable $func): Route
 	{
-		return $this->register_route(HTTPMethods::GET->value, $path, $func);
+		return $this->register_route(new Methods\Get(), $path, $func);
 	}
 
 	/**
@@ -61,7 +61,7 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function post(string $path, callable $func): Route
 	{
-		return $this->register_route(HTTPMethods::POST->value, $path, $func);
+		return $this->register_route(new Methods\Post(), $path, $func);
 	}
 
 	/**
@@ -72,7 +72,7 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function put(string $path, callable $func): Route
 	{
-		return $this->register_route(HTTPMethods::PUT->value, $path, $func);
+		return $this->register_route(new Methods\Put(), $path, $func);
 	}
 
 	/**
@@ -83,7 +83,7 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function delete(string $path, callable $func): Route
 	{
-		return $this->register_route(HTTPMethods::DELETE->value, $path, $func);
+		return $this->register_route(new Methods\Delete(), $path, $func);
 	}
 
 	/**
@@ -94,7 +94,7 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function patch(string $path, callable $func): Route
 	{
-		return $this->register_route(HTTPMethods::PATCH->value, $path, $func);
+		return $this->register_route(new Methods\Patch(), $path, $func);
 	}
 
 	/**
@@ -105,7 +105,7 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function options(string $path, callable $func): Route
 	{
-		return $this->register_route(HTTPMethods::OPTIONS->value, $path, $func);
+		return $this->register_route(new Methods\Options(), $path, $func);
 	}
 
 	/**
@@ -116,7 +116,7 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function head(string $path, callable $func): Route
 	{
-		return $this->register_route(HTTPMethods::HEAD->value, $path, $func);
+		return $this->register_route(new Methods\Head(), $path, $func);
 	}
 
 	/**
@@ -131,15 +131,13 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function upload(string $path, callable $func, bool $allow_multiple_files = true, array $allowed_extensions = [], string $max_size = null): Route
 	{
-		$http_method = HTTPMethods::POST->value;
-
 		// register the route
 		$name = Utils::get_route_name($path);
 		$route = null;
 		try {
 			$prefix_path = Utils::get_path_from_backtrace(1);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
-			$route = $this->router->register($prefix, $name, $http_method, $path, true, false, $func);
+			$route = $this->router->register($prefix, $name, new Methods\Upload(), $path, true, false, $func);
 			$route->upload->set_params("upload", $allow_multiple_files, $allowed_extensions, $max_size);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
@@ -158,15 +156,13 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function health(string $path, callable $func): Route
 	{
-		$http_method = HTTPMethods::GET->value;
-
 		// register the route
 		$name = Utils::get_route_name($path);
 		$route = null;
 		try {
 			$prefix_path = Utils::get_path_from_backtrace(1);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
-			$route = $this->router->register($prefix, $name, $http_method, $path, false, true, $func);
+			$route = $this->router->register($prefix, $name, new Methods\Health(), $path, false, true, $func);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";
@@ -177,11 +173,11 @@ class RequestHandler implements RequestHandlerInterface
 
 	/**
 	 * Register a new route
-	 * @param string $http_method The http method of the route
+	 * @param Method $http_method The http method of the route
 	 * @param string $path The path of the route
 	 * @return Route
 	 */
-	private function register_route(string $http_method, string $path, callable $func): Route
+	private function register_route(Methods\Method $method, string $path, callable $func): Route
 	{
 		// register the route
 		$name = Utils::get_route_name($path);
@@ -189,7 +185,7 @@ class RequestHandler implements RequestHandlerInterface
 		try {
 			$prefix_path = Utils::get_path_from_backtrace(2);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
-			$route = $this->router->register($prefix, $name, $http_method, $path, false, false, $func);
+			$route = $this->router->register($prefix, $name, $method, $path, false, false, $func);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";
@@ -241,7 +237,7 @@ class RequestHandler implements RequestHandlerInterface
 		$route->query->set_data($request->query_params);
 		$route->body->set_data($request->body);
 		$route->upload->set_files($request->files);
-		if ($route->is_upload) $route->upload->upload();
+		$route->http_method->handle($route);
 
 		// check if the user is logged in and if the user is allowed to access the route
 		if ($route->requires_login && !$this->session->is_logged()) {

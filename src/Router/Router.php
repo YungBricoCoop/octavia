@@ -2,6 +2,7 @@
 
 namespace ybc\octavia\Router;
 
+use ybc\octavia\Methods\Method;
 use ybc\octavia\Utils\Utils;
 
 class Router
@@ -50,7 +51,7 @@ class Router
 				break;
 			}
 			if (!$route_matched) continue;
-			if ($route->http_method != $http_method) continue;
+			if ($route->http_method::$method != $http_method) continue;
 			$route->dynamic_segments_values = $route_dynamic_segments_values;
 			return $route;
 		}
@@ -63,7 +64,7 @@ class Router
 	 * Register a new route
 	 * @param string $prefix The prefix of the route
 	 * @param string $name The name of the route
-	 * @param string $http_method The http method
+	 * @param Method $methode The http method of the route
 	 * @param string $path The path of the route
 	 * @param bool $is_upload If the route is an upload route
 	 * @param bool $is_health If the route is a health check route
@@ -72,7 +73,7 @@ class Router
 	 * @example $router->register("", "home", "GET", "/", false, function() { echo "Home page"; });
 	 * @return Route
 	 */
-	public function register($prefix, $name, $http_method, $path, $is_upload, $is_health, $callback)
+	public function register($prefix, $name, $method, $path, $is_upload, $is_health, $callback)
 	{
 		// add the prefix to the path if it exists
 		if ($prefix) {
@@ -82,8 +83,8 @@ class Router
 
 		$path_segments = Utils::get_route_path_segments($path);
 		$dynamic_path_segments_types = Utils::get_route_dynamic_path_segments_types($path_segments);
-		$route = new Route($name, $http_method, $path, $path_segments, $dynamic_path_segments_types, $is_upload, $is_health, $callback);
-		$key = $http_method . $path;
+		$route = new Route($name, $method, $path, $path_segments, $dynamic_path_segments_types, $is_upload, $is_health, $callback);
+		$key = $method::$method . $path;
 		if (array_key_exists($key, $this->routes)) {
 			throw new \InvalidArgumentException("ENDPOINT_ALREADY_REGISTERED");
 		}
