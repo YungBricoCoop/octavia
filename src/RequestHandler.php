@@ -255,15 +255,10 @@ class RequestHandler implements RequestHandlerInterface
 		$route->validate();
 
 		// build the function params
-		$function_params = $route->dynamic_segments_values;
-		$function_params[] = $route->query;
-		$function_params[] = $route->body;
-		$function_params[] = $this->session;
-		if ($route->upload) $function_params[] = $route->upload->get_uploaded_files();
-
+		$callback_param = $route->get_callback_params($this->session);
 
 		// call the route function
-		$result = call_user_func_array($route->func, $function_params);
+		$result = call_user_func_array($route->func, $callback_param);
 
 		if ($result instanceof Response) {
 			$this->response = $result;

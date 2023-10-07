@@ -92,6 +92,18 @@ class Route implements RouteInterface
 		$this->type->handle($this);
 	}
 
+	public function get_callback_params($session)
+	{
+		$function_params = $this->dynamic_segments_values;
+		$function_params[] = $this->query;
+		$function_params[] = $this->body;
+		$function_params[] = $session;
+		$type_params = $this->type->get_callback_params($this) ?? [];
+		$function_params = array_merge($function_params, $type_params);
+
+		return $function_params;
+	}
+
 	/**
 	 * Validate the body, query and upload params
 	 * @throws MissingBodyParameterException
