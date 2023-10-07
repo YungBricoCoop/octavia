@@ -138,7 +138,7 @@ class RequestHandler implements RequestHandlerInterface
 		try {
 			$prefix_path = Utils::get_path_from_backtrace(1);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
-			$route = $this->router->register($prefix, $name, new RouteTypes\Upload(), $path, true, false, $func);
+			$route = $this->router->register($prefix, $name, new RouteTypes\Upload(), $path, $func);
 			$route->upload->set_params("upload", $allow_multiple_files, $allowed_extensions, $max_size);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
@@ -164,7 +164,7 @@ class RequestHandler implements RequestHandlerInterface
 		try {
 			$prefix_path = Utils::get_path_from_backtrace(1);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
-			$route = $this->router->register($prefix, $name, new RouteTypes\Health($auth_required), $path, false, true, $func);
+			$route = $this->router->register($prefix, $name, new RouteTypes\Health($auth_required), $path, $func);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";
@@ -187,7 +187,7 @@ class RequestHandler implements RequestHandlerInterface
 		try {
 			$prefix_path = Utils::get_path_from_backtrace(2);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
-			$route = $this->router->register($prefix, $name, $method, $path, false, false, $func);
+			$route = $this->router->register($prefix, $name, $method, $path, $func);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";

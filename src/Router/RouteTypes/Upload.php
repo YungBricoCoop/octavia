@@ -10,6 +10,7 @@ class Upload extends RouteType
 	
 	public function handle(Route $route)
 	{
+		$route->upload->validate();
 		$route->upload->upload();
 	}
 	

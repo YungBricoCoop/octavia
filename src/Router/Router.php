@@ -66,14 +66,12 @@ class Router
 	 * @param string $name The name of the route
 	 * @param RouteType $type The type of the route
 	 * @param string $path The path of the route
-	 * @param bool $is_upload If the route is an upload route
-	 * @param bool $is_health If the route is a health check route
 	 * @param callable $callback The callback of the route
 	 * @throws \InvalidArgumentException
 	 * @example $router->register("", "home", "GET", "/", false, function() { echo "Home page"; });
 	 * @return Route
 	 */
-	public function register(string $prefix, string $name, RouteType $type, string $path, bool $is_upload, bool $is_health, callable $callback)
+	public function register(string $prefix, string $name, RouteType $type, string $path, callable $callback)
 	{
 		// add the prefix to the path if it exists
 		if ($prefix) {
@@ -83,7 +81,7 @@ class Router
 
 		$path_segments = Utils::get_route_path_segments($path);
 		$dynamic_path_segments_types = Utils::get_route_dynamic_path_segments_types($path_segments);
-		$route = new Route($name, $type, $path, $path_segments, $dynamic_path_segments_types, $is_upload, $is_health, $callback);
+		$route = new Route($name, $type, $path, $path_segments, $dynamic_path_segments_types, $callback);
 		$key = $type::$http_method . $path;
 		if (array_key_exists($key, $this->routes)) {
 			throw new \InvalidArgumentException("ENDPOINT_ALREADY_REGISTERED");

@@ -25,12 +25,10 @@ class Route implements RouteInterface
 	public ?Upload $upload;
 	public ?Query $query;
 	public ?Body $body;
-	public bool $is_upload;
-	public bool $is_health;
 	public bool $requires_login;
 	public bool $requires_admin;
 
-	public function __construct($name, $type, $path, $path_segments, $dynamic_segments_types, $is_upload, $is_health, $func)
+	public function __construct($name, $type, $path, $path_segments, $dynamic_segments_types, $func)
 	{
 		$this->name = $name;
 		$this->type = $type;
@@ -38,8 +36,6 @@ class Route implements RouteInterface
 		$this->path_segments = $path_segments ?? [];
 		$this->dynamic_segments_types = $dynamic_segments_types ?? [];
 		$this->dynamic_segments_values = [];
-		$this->is_upload = $is_upload;
-		$this->is_health = $is_health;
 		$this->requires_login = false;
 		$this->requires_admin = false;
 		$this->func = $func;
@@ -131,7 +127,6 @@ class Route implements RouteInterface
 		}
 		$this->query->validate();
 		$this->body->validate();
-		if ($this->is_upload) $this->upload->validate();
 	}
 
 	public function __toString()
