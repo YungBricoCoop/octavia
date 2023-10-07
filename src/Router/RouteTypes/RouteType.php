@@ -1,13 +1,13 @@
 <?php
 
-namespace ybc\octavia\Methods;
+namespace ybc\octavia\Router\RouteTypes;
 
 use ybc\octavia\Router\Route;
 
 #FIXME: The way the Methods are implemented and linked with the routes is weird
-abstract class Method
+abstract class RouteType
 {
-	public static $method = "GET";
+	public static $http_method = "GET";
 	public function handle(Route $route)
 	{
 	}

@@ -1,12 +1,12 @@
 <?php
 
-namespace ybc\octavia\Methods;
+namespace ybc\octavia\Router\RouteTypes;
 
 use ybc\octavia\Router\Route;
 
-class Upload extends Method
+class Upload extends RouteType
 {
-	public static $method = "POST";
+	public static $http_method = "POST";
 	public function handle(Route $route)
 	{
 		$route->upload->upload();

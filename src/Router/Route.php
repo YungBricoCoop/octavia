@@ -4,6 +4,7 @@ namespace ybc\octavia\Router;
 
 use ybc\octavia\Utils\Utils;
 use ybc\octavia\Interfaces\RouteInterface;
+use ybc\octavia\Router\RouteTypes\RouteType;
 
 use WrongPathParameterTypeException;
 use MissingBodyParameterException;
@@ -12,11 +13,10 @@ use WrongQueryParameterTypeException;
 use MissingObjectPropertyException;
 use WrongObjectPropertyTypeException;
 
-
 class Route implements RouteInterface
 {
 	public $name = null;
-	public $http_method = null;
+	public ?RouteType $type = null;
 	public $path = null;
 	public $path_segments = null;
 	public $dynamic_segments_types = null;
@@ -30,10 +30,10 @@ class Route implements RouteInterface
 	public $requires_login = false;
 	public $requires_admin = false;
 
-	public function __construct($name, $http_method, $path, $path_segments, $dynamic_segments_types, $is_upload, $is_health, $func)
+	public function __construct($name, $type, $path, $path_segments, $dynamic_segments_types, $is_upload, $is_health, $func)
 	{
 		$this->name = $name;
-		$this->http_method = $http_method;
+		$this->type = $type;
 		$this->path = $path;
 		$this->path_segments = $path_segments;
 		$this->dynamic_segments_types = $dynamic_segments_types;
@@ -88,6 +88,10 @@ class Route implements RouteInterface
 		return $this;
 	}
 
+	public function handle(){
+		$this->type->handle($this);
+	}
+
 	/**
 	 * Validate the body, query and upload params
 	 * @throws MissingBodyParameterException
@@ -116,6 +120,6 @@ class Route implements RouteInterface
 
 	public function __toString()
 	{
-		return $this->http_method . "_" . $this->func;
+		return $this->type . "_" . $this->func;
 	}
 }
