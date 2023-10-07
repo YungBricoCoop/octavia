@@ -276,11 +276,10 @@ class RequestHandler implements RequestHandlerInterface
 	/**
 	 * Send a response
 	 * @param mixed $data The data to send
-	 * @param string $error The error to send
 	 * @param int $status_code The status code to send
 	 * @return void
 	 */
-	public function send_response($data, $status_code = 200)
+	public function send_response(mixed $data, int $status_code = 200)
 	{
 		$this->response->data = $data;
 		$this->response->status_code = $status_code;
@@ -303,7 +302,7 @@ class RequestHandler implements RequestHandlerInterface
 	 * Set the prefix for all routes
 	 * @param string $prefix
 	 */
-	public function set_prefix($prefix)
+	public function set_prefix(string $prefix)
 	{
 		$this->router->set_prefix($prefix);
 	}

@@ -7,10 +7,10 @@ use MissingQueryParameterException, WrongQueryParameterTypeException;
 
 class Query
 {
-	private $data = [];
-	private $required_params = [];
+	private mixed $data;
+	private mixed $required_params;
 
-	public function __construct($data = [], $required_params = [])
+	public function __construct(mixed $data = [], mixed $required_params = [])
 	{
 		$this->data = $data;
 		$this->required_params = $required_params;
@@ -30,7 +30,7 @@ class Query
 		$this->validate_proprety($this->data, $this->required_params);
 	}
 
-	private function validate_proprety($data, $required)
+	private function validate_proprety(mixed $data, mixed $required)
 	{
 		// If the value is a string and represents a class
 		if (is_string($required) && class_exists($required)) {
@@ -59,27 +59,27 @@ class Query
 	 * @param string $key The key of the param
 	 * @return mixed The value of the param, or null if it does not exist
 	 */
-	public function __get($key)
+	public function __get(string $key)
 	{
 		return $this->data[$key] ?? null;
 	}
 
 	/**
 	 * Set the input query data
-	 * @param array $data
+	 * @param mixed $data
 	 * @return void
 	 */
-	public function set_data($data)
+	public function set_data(mixed $data)
 	{
 		$this->data = $data;
 	}
 
 	/**
 	 * Set the required params
-	 * @param array $required_params
+	 * @param mixed $required_params
 	 * @return void
 	 */
-	public function set_required_params($required_params)
+	public function set_required_params(mixed $required_params)
 	{
 		$this->required_params = $required_params;
 	}

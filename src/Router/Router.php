@@ -18,7 +18,7 @@ class Router
 	 * @param string $route_path The path of the route
 	 * @return Route|null
 	 */
-	public function route($http_method, $route_path)
+	public function route(string $http_method, string $route_path)
 	{
 		// match routes by number of segments
 		$segments = Utils::get_route_path_segments($route_path);
@@ -73,7 +73,7 @@ class Router
 	 * @example $router->register("", "home", "GET", "/", false, function() { echo "Home page"; });
 	 * @return Route
 	 */
-	public function register($prefix, $name, $type, $path, $is_upload, $is_health, $callback)
+	public function register(string $prefix, string $name, RouteType $type, string $path, bool $is_upload, bool $is_health, callable $callback)
 	{
 		// add the prefix to the path if it exists
 		if ($prefix) {
@@ -96,7 +96,7 @@ class Router
 	 * Set the prefix for all routes
 	 * @param string $prefix
 	 */
-	public function set_prefix($prefix)
+	public function set_prefix(string $prefix)
 	{
 		$this->prefix = $prefix;
 	}

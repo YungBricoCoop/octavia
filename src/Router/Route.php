@@ -15,30 +15,33 @@ use WrongObjectPropertyTypeException;
 
 class Route implements RouteInterface
 {
-	public $name = null;
-	public ?RouteType $type = null;
-	public $path = null;
-	public $path_segments = null;
-	public $dynamic_segments_types = null;
-	public $dynamic_segments_values = [];
-	public $func = null;
-	public ?Upload $upload = null;
-	public ?Query $query = null;
-	public ?Body $body = null;
-	public $is_upload = false;
-	public $is_health = false;
-	public $requires_login = false;
-	public $requires_admin = false;
+	public string $name;
+	public RouteType $type;
+	public string $path;
+	public array $path_segments;
+	public array $dynamic_segments_types;
+	public array $dynamic_segments_values;
+	public mixed $func;
+	public ?Upload $upload;
+	public ?Query $query;
+	public ?Body $body;
+	public bool $is_upload;
+	public bool $is_health;
+	public bool $requires_login;
+	public bool $requires_admin;
 
 	public function __construct($name, $type, $path, $path_segments, $dynamic_segments_types, $is_upload, $is_health, $func)
 	{
 		$this->name = $name;
 		$this->type = $type;
 		$this->path = $path;
-		$this->path_segments = $path_segments;
-		$this->dynamic_segments_types = $dynamic_segments_types;
+		$this->path_segments = $path_segments ?? [];
+		$this->dynamic_segments_types = $dynamic_segments_types ?? [];
+		$this->dynamic_segments_values = [];
 		$this->is_upload = $is_upload;
 		$this->is_health = $is_health;
+		$this->requires_login = false;
+		$this->requires_admin = false;
 		$this->func = $func;
 
 		$this->query = new Query();
@@ -88,7 +91,8 @@ class Route implements RouteInterface
 		return $this;
 	}
 
-	public function handle(){
+	public function handle()
+	{
 		$this->type->handle($this);
 	}
 

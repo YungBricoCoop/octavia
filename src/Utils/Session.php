@@ -18,7 +18,7 @@ class Session
 	 * @example $session->set('user', ['firstname' => 'Octavia', 'lastname' => 'Blake']);
 	 * @return void
 	 */
-	public function set($key, $value)
+	public function set(string $key, mixed $value)
 	{
 		$_SESSION[$key] = $value;
 	}
@@ -29,7 +29,7 @@ class Session
 	 * @example $session->get('user');
 	 * @return mixed
 	 */
-	public function get($key)
+	public function get(string $key)
 	{
 		return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
 	}
@@ -40,7 +40,7 @@ class Session
 	 * @example $session->remove('user');
 	 * @return bool
 	 */
-	public function remove($key)
+	public function remove(string $key)
 	{
 		if (isset($_SESSION[$key])) {
 			unset($_SESSION[$key]);

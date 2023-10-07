@@ -12,7 +12,7 @@ class Utils
 	 * @param class $class The class to validate against
 	 * @return array [string $property, bool $is_missing, bool $is_wrong_type, string $expected_type, string $actual_type]
 	 */
-	public static function validate($object, string $className)
+	public static function validate(mixed $object, string $className)
 	{
 		$result = [
 			"property" => "",
@@ -98,7 +98,7 @@ class Utils
 	 * @param string $path
 	 * @return string
 	 */
-	public static function get_route_name($path)
+	public static function get_route_name(string $path)
 	{
 		$path = str_replace('/', '_', $path);
 		$path = str_replace('-', '_', $path);
@@ -114,7 +114,7 @@ class Utils
 	 * @return array
 	 * @example /api/v1/{user}/homepage => ["api", "v1", "{user}", "homepage"]
 	 */
-	public static function get_route_path_segments($path)
+	public static function get_route_path_segments(string $path)
 	{
 		// remove trailing slash if any
 		if (substr($path, -1) == "/") {
@@ -128,7 +128,7 @@ class Utils
 		return $segments;
 	}
 
-	public static function get_route_dynamic_path_segments_types($segments)
+	public static function get_route_dynamic_path_segments_types(array $segments)
 	{
 		// types can only be int or string ex {user:int}
 		$types = [];
@@ -154,7 +154,7 @@ class Utils
 	 * @param string $type
 	 * @return array [string $param, bool $is_valid, string $expected_type, string $actual_type]
 	 */
-	public static function validate_dynamic_param($param, $type)
+	public static function validate_dynamic_param(mixed $param, string $type)
 	{
 		$result = [
 			"param" => $param,
@@ -192,7 +192,7 @@ class Utils
 	 * @param string $path
 	 * @return bool
 	 */
-	public static function is_path_absolute($path)
+	public static function is_path_absolute(string $path)
 	{
 		return $path[0] === '/' || (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' && isset($path[1]) && $path[1] === ':');
 	}
@@ -212,7 +212,7 @@ class Utils
 	 * @param string $file_name
 	 * @return string
 	 */
-	public static function get_file_extension($file_name)
+	public static function get_file_extension(string $file_name)
 	{
 		return pathinfo($file_name, PATHINFO_EXTENSION);
 	}
@@ -222,7 +222,7 @@ class Utils
 	 * @param int $level
 	 * @return string The path of the file
 	 */
-	public static function get_path_from_backtrace($level = 0)
+	public static function get_path_from_backtrace(int $level = 0)
 	{
 		$backtrace = debug_backtrace();
 		$path = $backtrace[$level]['file'];
@@ -235,7 +235,7 @@ class Utils
 	 * @param string $path
 	 * @return string The folder difference or empty string if there is no difference
 	 */
-	public static function extract_folder_diff($base_path, $path)
+	public static function extract_folder_diff(string $base_path, string $path)
 	{
 		$remaining_path = str_replace(dirname($base_path), '', $path);
 		$remaining_path = trim($remaining_path, DIRECTORY_SEPARATOR);
@@ -250,7 +250,7 @@ class Utils
 	 * @param string $size_str
 	 * @return int
 	 */
-	public static function convert_to_bytes($size_str)
+	public static function convert_to_bytes(string $size_str)
 	{
 		if (!$size_str) return 0;
 		$size_str = strtolower($size_str);
@@ -277,7 +277,7 @@ class Utils
 	 * @param string $password
 	 * @return bool True if valid
 	 */
-	function validate_digest_auth($username, $password)
+	function validate_digest_auth(string $username, string $password)
 	{
 		$auth_header = $_SERVER['PHP_AUTH_DIGEST'] ?? '';
 		if (!$auth_header) {

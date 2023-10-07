@@ -87,7 +87,7 @@ class Upload
 	 * @example set_params("uploads", true, ["jpg", "png"], 10MB)
 	 * @return void
 	 */
-	public function set_params($upload_dir, $allow_multiple_files, $allowed_extensions, $max_file_size)
+	public function set_params(string $upload_dir, bool $allow_multiple_files, array $allowed_extensions, string $max_file_size)
 	{
 		// create directory if it doesn't exist
 		if (!file_exists($upload_dir)) {
@@ -108,12 +108,12 @@ class Upload
 	}
 
 	/**
-	 * Set the fill that are uploaded
+	 * Set the files that are uploaded
 	 * @param array $files
 	 * @example set_files($_FILES)
 	 * @return void
 	 */
-	public function set_files($files)
+	public function set_files(array $files)
 	{
 		// Handle if one or multiple files are uploaded
 		if (array_key_exists('files', $files)) {

@@ -7,10 +7,10 @@ use MissingBodyParameterException, MissingObjectPropertyException, WrongObjectPr
 
 class Body
 {
-	private $data = [];
-	private $required_body = [];
+	private mixed $data;
+	private mixed $required_body;
 
-	public function __construct($data = [], $required_body = [])
+	public function __construct(mixed $data = [], mixed $required_body = [])
 	{
 		$this->data = $data;
 		$this->required_body = $required_body;
@@ -30,7 +30,7 @@ class Body
 		$this->validate_proprety($this->data, $this->required_body);
 	}
 
-	private function validate_proprety($data, $required)
+	private function validate_proprety(mixed $data, mixed $required)
 	{
 		// If the value is a string and represents a class
 		if (is_string($required) && class_exists($required)) {
@@ -64,27 +64,27 @@ class Body
 	 * @param string $key The key of the param
 	 * @return mixed The value of the param, or null if it does not exist
 	 */
-	public function __get($key)
+	public function __get(string $key)
 	{
 		return $this->data[$key] ?? null;
 	}
 
 	/**
 	 * Set the input body data
-	 * @param array $data
+	 * @param mixed $data
 	 * @return void
 	 */
-	public function set_data($data)
+	public function set_data(mixed $data)
 	{
 		$this->data = $data;
 	}
 
 	/**
 	 * Set the required body
-	 * @param array $required_body
+	 * @param mixed $required_body
 	 * @return void
 	 */
-	public function set_required_body($required_body)
+	public function set_required_body(mixed $required_body)
 	{
 		$this->required_body = $required_body;
 	}

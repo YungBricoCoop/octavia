@@ -11,7 +11,7 @@ class Templater
 {
 	private $twig;
 
-	public function __construct($template_dir = null)
+	public function __construct(string $template_dir = null)
 	{
 		$loader = $template_dir ? new FilesystemLoader($template_dir) : new ArrayLoader();
 		$this->twig = new Environment($loader);
@@ -24,7 +24,7 @@ class Templater
 	 * @example $templater->render_from_string("{{ name }} kon {{kru}}", ["name" => "Octavia", "kru" => "Skaikru"]);
 	 * @return string
 	 */
-	public function render_from_string($string, $params)
+	public function render_from_string(string $string, array $params)
 	{
 		$template = $this->twig->createTemplate($string);
 		return $template->render($params);
@@ -38,7 +38,7 @@ class Templater
 	 * @example $templater->render_from_file("index.html", ["name" => "Octavia", "kru" => "Skaikru"]);
 	 * @return string
 	 */
-	public function render_from_file($file, $params)
+	public function render_from_file(string $file, array $params)
 	{
 		return $this->twig->render($file, $params);
 	}
