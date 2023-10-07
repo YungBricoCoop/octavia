@@ -272,36 +272,19 @@ class Utils
 	}
 
 	/**
-	 * Validate digest auth
+	 * Validate basic auth
 	 * @param string $username
 	 * @param string $password
 	 * @return bool True if valid
 	 */
-	function validate_digest_auth(string $username, string $password)
+	public static function validate_basic_auth(string $username, string $password)
 	{
-		$auth_header = $_SERVER['PHP_AUTH_DIGEST'] ?? '';
-		if (!$auth_header) {
-			return false;  
+		// Check if the PHP_AUTH_USER and PHP_AUTH_PW server variables are set
+		if (!isset($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+			return false;
 		}
 
-		$needed_parts = array('nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1);
-		$data = array();
-		$keys = implode('|', array_keys($needed_parts));
-		preg_match_all('@(' . $keys . ')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', $auth_header, $matches, PREG_SET_ORDER);
-
-		foreach ($matches as $m) {
-			$data[$m[1]] = $m[3] ?: $m[4];
-			unset($needed_parts[$m[1]]);
-		}
-
-		if ($needed_parts) {
-			return false;  
-		}
-
-		$A1 = md5($username . ':Realm:' . $password);
-		$A2 = md5($_SERVER['REQUEST_METHOD'] . ':' . $data['uri']);
-
-		$valid_response = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
-		return $valid_response == $data['response'];
+		// Compare the provided username and password to the ones from the HTTP request
+		return $_SERVER['PHP_AUTH_USER'] === $username && $_SERVER['PHP_AUTH_PW'] === $password;
 	}
 }

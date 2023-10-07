@@ -152,10 +152,11 @@ class RequestHandler implements RequestHandlerInterface
 	 * Handle health check
 	 * @param string $path The path of the route
 	 * @param callable $func Callback function
+	 * @param bool $auth_required If the route requires authentication
 	 * @example $router->health("/health", function($query, $body, $session) { return Health::HEALTHY; });
 	 * @return Route
 	 */
-	public function health(string $path, callable $func): Route
+	public function health(string $path, callable $func, bool $auth_required = false): Route
 	{
 		// register the route
 		$name = Utils::get_route_name($path);
@@ -163,7 +164,7 @@ class RequestHandler implements RequestHandlerInterface
 		try {
 			$prefix_path = Utils::get_path_from_backtrace(1);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
-			$route = $this->router->register($prefix, $name, new RouteTypes\Health(), $path, false, true, $func);
+			$route = $this->router->register($prefix, $name, new RouteTypes\Health($auth_required), $path, false, true, $func);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";
