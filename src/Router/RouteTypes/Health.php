@@ -13,7 +13,7 @@ class Health extends RouteType
 	private string $username;
 	private string $password;
 
-	public function __construct(bool $auth_required = false, string $username = "octavia", string $password = "blake")
+	public function __construct(bool $auth_required = OCTAVIA_HEALTH_AUTH_REQUIRED, string $username = OCTAVIA_HEALTH_USERNAME, string $password = OCTAVIA_HEALTH_PASSWORD)
 	{
 		$this->auth_required = $auth_required;
 		$this->username = $username;

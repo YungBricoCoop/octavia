@@ -21,9 +21,11 @@ class Config
 			// LOG
 			"LOG_DIR" => "logs",
 			"LOG_FILE" => "octavia.log",
+			"LOG_FILE_FORMAT" => "d-m-Y",
 			"LOG_LEVEL" => "DEBUG",
 			"LOG_FORMAT" => "[%level_name%] %datetime% : %message% %context% %extra%\n",
 			"LOG_DATE_FORMAT" => "d-m-Y H:i:s",
+			"LOG_MAX_FILES" => 60,
 
 			// HEALTH
 			"HEALTH_AUTH_REQUIRED" => true,

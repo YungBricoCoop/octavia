@@ -19,14 +19,14 @@ class Log
 	private $level;
 	private $max_files;
 
-	public function __construct($name_or_logger, $level = Level::Debug)
+	public function __construct($name_or_logger, $level = OCTAVIA_LOG_LEVEL)
 	{
-		$this->log_file = "app.log";
-		$this->date_format = "d-m-Y H:i:s";
-		$this->log_format = "[%level_name%] %datetime% : %message% %context% %extra%\n";
+		$this->log_file = OCTAVIA_LOG_FILE;
+		$this->log_format = OCTAVIA_LOG_FORMAT;
+		$this->date_format = OCTAVIA_LOG_DATE_FORMAT;
 		$this->level = $level;
-		$this->max_files = 7;
-		$this->log_dir = $this->get_log_dir("logs");
+		$this->max_files = OCTAVIA_LOG_MAX_FILES;
+		$this->log_dir = $this->get_log_dir(OCTAVIA_LOG_DIR);
 
 		if ($name_or_logger instanceof Logger) {
 			$this->logger = $name_or_logger;

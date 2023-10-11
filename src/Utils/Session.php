@@ -7,6 +7,8 @@ class Session
 	public function __construct($options = [])
 	{
 		if (session_status() == PHP_SESSION_NONE) {
+			ini_set('session.gc_maxlifetime', OCTAVIA_SESSION_LIFETIME);
+			session_name(OCTAVIA_SESSION_NAME);
 			session_start($options);
 		}
 	}
@@ -64,7 +66,7 @@ class Session
 	 */
 	public function is_logged()
 	{
-		return isset($_SESSION['is_logged']) && $_SESSION['is_logged'] == 1;
+		return isset($_SESSION[OCTAVIA_SESSION_IS_LOGGED_KEY]) && $_SESSION[OCTAVIA_SESSION_IS_LOGGED_KEY] == 1;
 	}
 
 	/**
@@ -73,6 +75,6 @@ class Session
 	 */
 	public function is_admin()
 	{
-		return isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
+		return isset($_SESSION[OCTAVIA_SESSION_IS_ADMIN_KEY]) && $_SESSION[OCTAVIA_SESSION_IS_ADMIN_KEY] == 1;
 	}
 }

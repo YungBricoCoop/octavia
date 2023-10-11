@@ -133,7 +133,7 @@ class RequestHandler implements RequestHandlerInterface
 	 * @example $router->upload("/upload", function($query, $body, $session, $files) { echo "Upload page"; }, true, ["jpg", "png"], "10MB");
 	 * @return Route
 	 */
-	public function upload(string $path, callable $func, bool $allow_multiple_files = true, array $allowed_extensions = [], string $max_size = null): Route
+	public function upload(string $path, callable $func, bool $allow_multiple_files = OCTAVIA_UPLOAD_ALLOW_MULTIPLE_FILES, array $allowed_extensions = [], string $max_size = OCTAVIA_UPLOAD_MAX_SIZE): Route
 	{
 		// register the route
 		$name = Utils::get_route_name($path);
@@ -142,7 +142,7 @@ class RequestHandler implements RequestHandlerInterface
 			$prefix_path = Utils::get_path_from_backtrace(1);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
 			$route = $this->router->register($prefix, $name, new RouteTypes\Upload(), $path, $func);
-			$route->upload->set_params("upload", $allow_multiple_files, $allowed_extensions, $max_size);
+			$route->upload->set_params(OCTAVIA_UPLOAD_DIR, $allow_multiple_files, $allowed_extensions, $max_size);
 		} catch (Exception $e) {
 			$this->logger->error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";
