@@ -6,7 +6,7 @@ require_once "Exceptions.php";
 
 use CustomException, ForbiddenException, UnauthorizedException, MethodNotAllowedException, NotFoundException, ConflictException, InternalServerErrorException;
 use Exception;
-use ybc\octavia\Config\ConfigLoader;
+use ybc\octavia\Config\Config;
 use ybc\octavia\Interfaces\RequestHandlerInterface;
 use ybc\octavia\Router\Router;
 use ybc\octavia\Router\Route;
@@ -36,7 +36,7 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function __construct($config = [], Session $session = null)
 	{
-		ConfigLoader::load($config);
+		Config::load($config);
 		$this->router = new Router();
 		$this->middleware_handler = new MiddlewareHandler();
 		$this->middleware_handler->add(new JsonMiddleware());

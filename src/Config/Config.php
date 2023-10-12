@@ -2,16 +2,16 @@
 
 namespace ybc\octavia\Config;
 
-use ybc\octavia\Constants\Config;
+use ybc\octavia\Constants\FrameworkConfig;
 
-class ConfigLoader
+class Config
 {
 
 	public static function load($user_config = [])
 	{
 		define("CONFIG_PREFIX", "OCTAVIA_");
-		$default_config = Config::get();
-		
+		$default_config = FrameworkConfig::get();
+
 		//TODO: Load config from given .env file
 		foreach ($default_config as $key => $default_value) {
 			$env_value = getenv($key);

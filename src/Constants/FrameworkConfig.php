@@ -2,7 +2,7 @@
 
 namespace ybc\octavia\Constants;
 
-class Config
+class FrameworkConfig
 {
 	public static function get()
 	{
