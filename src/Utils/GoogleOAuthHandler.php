@@ -33,6 +33,44 @@ class GoogleOAuthData
     }
 }
 
+class GoogleOAuthConfig
+{
+    public string $client_id;
+    public string $project_id;
+    public string $auth_uri;
+    public string $token_uri;
+    public string $auth_provider_x509_cert_url;
+    public string $client_secret;
+    public array $redirect_uris;
+    public array $javascript_origins;
+
+    public function __construct(array $config)
+    {
+        $this->client_id = $config['client_id'];
+        $this->project_id = $config['project_id'];
+        $this->auth_uri = $config['auth_uri'];
+        $this->token_uri = $config['token_uri'];
+        $this->auth_provider_x509_cert_url = $config['auth_provider_x509_cert_url'];
+        $this->client_secret = $config['client_secret'];
+        $this->redirect_uris = $config['redirect_uris'];
+        $this->javascript_origins = $config['javascript_origins'];
+    }
+
+    public function to_array(): array
+    {
+        return [
+            'client_id' => $this->client_id,
+            'project_id' => $this->project_id,
+            'auth_uri' => $this->auth_uri,
+            'token_uri' => $this->token_uri,
+            'auth_provider_x509_cert_url' => $this->auth_provider_x509_cert_url,
+            'client_secret' => $this->client_secret,
+            'redirect_uris' => $this->redirect_uris,
+            'javascript_origins' => $this->javascript_origins
+        ];
+    }
+}
+
 class GoogleOAuthHandler
 {
     private string $data_path = OCTAVIA_GOOGLE_OAUTH_DATA_PATH;
@@ -56,7 +94,7 @@ class GoogleOAuthHandler
      */
     private function get_cached_data(): ?GoogleOAuthData
     {
-        if (isset($_SESSION[$this->session_key])) {
+        if (isset($_SESSION[$this->session_key]) && $_SESSION[$this->session_key] instanceof GoogleOAuthData) {
             return $_SESSION[$this->session_key];
         }
 
@@ -64,8 +102,8 @@ class GoogleOAuthHandler
     }
 
     /**
-     * Gets the Google OAuth data from the cache or the tokens file.
-     * If the access token is expired, it will refresh it and save it to the cache and tokens file.
+     * Gets the Google OAuth data from the cache or the data file.
+     * If the access token is expired, it will refresh it and save it to the cache and data file.
      * 
      * @return GoogleOAuthData The data
      */
@@ -90,6 +128,45 @@ class GoogleOAuthHandler
         return $file_data;
     }
 
+    /**
+     * Gets the Google OAuth config from the config file
+     * 
+     * @return GoogleOAuthConfig The config
+     */
+    public function get_config(): GoogleOAuthConfig
+    {
+        // check if file exists
+        if (!file_exists($this->config_path)) {
+            throw new \Exception("Config file does not exist");
+        }
+
+        $file_content = file_get_contents($this->config_path);
+
+        if ($file_content === FALSE) {
+            throw new \Exception("Could not read config file");
+        }
+
+        // decode and get the web config
+        $config = json_decode($file_content, true);
+
+        if (!isset($config['web'])) {
+            throw new \Exception("Invalid config file");
+        }
+
+        $config = $config['web'];
+
+        // make sure all the required fields are present dynamically by getting the class variables
+        $class_vars = get_class_vars(GoogleOAuthConfig::class);
+
+        foreach ($class_vars as $key => $value) {
+            if (!isset($config[$key])) {
+                throw new \Exception("Invalid config file");
+            }
+        }
+
+        return new GoogleOAuthConfig($config);
+    }
+
     /** 
      * Checks if the access token is expired
      * 
@@ -109,7 +186,7 @@ class GoogleOAuthHandler
 
     /**
      * Gets a new access token from Google OAuth using the refresh token, 
-     * and saves it to the tokens file and session (cache)
+     * and saves it to the data file and session (cache)
      * 
      * @param string $refresh_token
      * @return GoogleOAuthData The new data
@@ -135,30 +212,36 @@ class GoogleOAuthHandler
     }
 
     /**
-     * Reads the tokens file and returns the data
+     * Reads the data file and returns the data
      * 
      * @return GoogleOAuthData The data
      * @throws \Exception If the file could not be read or the file is invalid
      */
     private function _read_from_file(): GoogleOAuthData
     {
+
+        // check if file exists
+        if (!file_exists($this->data_path)) {
+            throw new \Exception("Data file does not exist");
+        }
+
         $content = file_get_contents($this->data_path);
 
         if ($content === FALSE) {
-            throw new \Exception("Could not read tokens file");
+            throw new \Exception("Could not read data file");
         }
 
         $data = json_decode($content, true);
 
         if (!isset($data['access_token']) || !isset($data['refresh_token']) || !isset($data['expires_in']) || !isset($data['expires_at'])) {
-            throw new \Exception("Invalid tokens file");
+            throw new \Exception("Invalid data file");
         }
 
         return new GoogleOAuthData($data['access_token'], $data['refresh_token'], $data['expires_in'], $data['expires_at']);
     }
 
     /**
-     *  Writes the data to the tokens file
+     *  Writes the data to the data file
      * 
      * @param GoogleOAuthData $data The data to write
      */
@@ -167,7 +250,7 @@ class GoogleOAuthHandler
         $result = file_put_contents($this->data_path, json_encode($data->to_array()));
 
         if ($result === FALSE) {
-            throw new \Exception("Could not write to tokens file");
+            throw new \Exception("Could not write to data file");
         }
     }
 
@@ -215,6 +298,7 @@ class GoogleOAuthHandler
 
         // Check for errors
         if (isset($token['error']) || !isset($token['access_token'])) {
+            $this->logger->error("Error while fetching access token");
             return false;
         }
 

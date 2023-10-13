@@ -89,7 +89,7 @@ class Route implements RouteInterface
 
 	public function handle()
 	{
-		$this->type->handle($this);
+		return $this->type->handle($this);
 	}
 
 	public function get_callback_params($session)
@@ -131,6 +131,6 @@ class Route implements RouteInterface
 
 	public function __toString()
 	{
-		return $this->type . "_" . $this->func;
+		return $this->name . " " . $this->path;
 	}
 }

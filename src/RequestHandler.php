@@ -230,7 +230,14 @@ class RequestHandler implements RequestHandlerInterface
 			}
 			$this->send_response($e->getMessage(), $e->getCode());
 		} catch (\Exception $e) {
-			$this->logger->error($e->getMessage(), $e->getTrace());
+
+			// get type of exception 
+			$exception_type = get_class($e);
+
+			// merge the exception type with the exception message
+			$exception_message = $exception_type . ": " . $e->getMessage();
+
+			$this->logger->error($exception_message, $e->getTrace());
 			$this->send_response("INTERNAL_SERVER_ERROR", 500);
 		}
 	}
@@ -277,7 +284,7 @@ class RequestHandler implements RequestHandlerInterface
 
 		// build the function params
 		$callback_param = $route->get_callback_params($this->session);
-		
+
 		// merge the params with the handle return if not null
 		if (!is_null($handle_return)) {
 			$callback_param = array_merge([$handle_return], $callback_param);
