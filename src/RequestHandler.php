@@ -176,6 +176,13 @@ class RequestHandler implements RequestHandlerInterface
 		return $route;
 	}
 
+	/**
+	 * Handle google oauth
+	 * @param string $path The path of the route
+	 * @param callable $func Callback function
+	 * @example $router->google_oauth("/google", function($status, $query, $body, $session) { $google_oauth_handler = new GoogleOAuthHandler(); });
+	 * @return Route
+	 */
 	public function google_oauth(string $path, callable $func): Route
 	{
 		// register the route
