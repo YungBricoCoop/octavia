@@ -3,6 +3,7 @@
 namespace ybc\octavia\Utils;
 
 use Ramsey\Uuid\Uuid;
+use Dotenv\Dotenv;
 
 class Utils
 {
@@ -286,5 +287,13 @@ class Utils
 
 		// Compare the provided username and password to the ones from the HTTP request
 		return $_SERVER['PHP_AUTH_USER'] === $username && $_SERVER['PHP_AUTH_PW'] === $password;
+	}
+
+	public static function load_env(string $env_file)
+	{
+		$dir = dirname($env_file);
+		$file = basename($env_file);
+		$dotenv = Dotenv::createImmutable($dir);
+		$dotenv->load($file);
 	}
 }
