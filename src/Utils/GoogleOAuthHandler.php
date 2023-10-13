@@ -5,6 +5,7 @@ namespace ybc\octavia\Utils;
 
 use Google\Client as Google_Client;
 use Google\Service\Gmail as Google_Service_Gmail;
+use ybc\octavia\Utils\Log;
 
 class GoogleOAuthData
 {
@@ -37,7 +38,7 @@ class GoogleOAuthHandler
     private string $data_path = OCTAVIA_GOOGLE_OAUTH_DATA_PATH;
     private string $config_path = OCTAVIA_GOOGLE_OAUTH_CONFIG_PATH;
     private string $session_key = 'google_oauth_data';
-    private $logger;
+    private Log $logger;
 
     public function __construct()
     {
@@ -81,6 +82,7 @@ class GoogleOAuthHandler
         }
 
         $file_data = $this->_read_from_file();
+
         if ($this->_is_access_token_expired($file_data->expires_at)) {
             return $this->_refresh_access_token($file_data->refresh_token);
         }
