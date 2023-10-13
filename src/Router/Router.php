@@ -96,6 +96,9 @@ class Router
 	 */
 	public function set_prefix(string $prefix)
 	{
+		if (substr($prefix, -1) == "/") {
+			$prefix = substr($prefix, 0, -1);
+		}
 		$this->prefix = $prefix;
 	}
 }
