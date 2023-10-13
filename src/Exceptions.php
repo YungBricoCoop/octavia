@@ -177,3 +177,13 @@ class FileTypeNotAllowedException extends CustomException
 		return "FILE_TYPE_NOT_ALLOWED";
 	}
 }
+
+class ErrorPromptingGoogleOAuthException extends CustomException
+{
+	protected $status_code = 400;
+
+	protected function get_msg()
+	{
+		return "ERROR_PROMPTING_GOOGLE_OAUTH";
+	}
+}

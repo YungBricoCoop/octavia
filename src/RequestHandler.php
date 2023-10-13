@@ -176,6 +176,23 @@ class RequestHandler implements RequestHandlerInterface
 		return $route;
 	}
 
+	public function google_oauth(string $path, callable $func): Route
+	{
+		// register the route
+		$name = Utils::get_route_name($path);
+		$route = null;
+		try {
+			$prefix_path = Utils::get_path_from_backtrace(1);
+			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
+			$route = $this->router->register($prefix, $name, new RouteTypes\GoogleOAuth(), $path, $func);
+		} catch (Exception $e) {
+			$this->logger->error($e->getMessage(), $e->getTrace());
+			$this->response->data = "INTERNAL_SERVER_ERROR";
+		}
+
+		return $route;
+	}
+
 	/**
 	 * Register a new route
 	 * @param RouteType $type The type of the route
@@ -253,13 +270,18 @@ class RequestHandler implements RequestHandlerInterface
 		}
 
 		// handle the route based on the type
-		$route->handle();
+		$handle_return = $route->handle();
 
 		// validate the query, body and files
 		$route->validate();
 
 		// build the function params
 		$callback_param = $route->get_callback_params($this->session);
+		
+		// merge the params with the handle return if not null
+		if (!is_null($handle_return)) {
+			$callback_param = array_merge([$handle_return], $callback_param);
+		}
 
 		// call the route function
 		$result = call_user_func_array($route->func, $callback_param);
