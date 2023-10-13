@@ -1,6 +1,6 @@
 <?php
 
-require 'vendor/autoload.php';
+require '../../vendor/autoload.php';
 
 use ybc\octavia\RequestHandler;
 use ybc\octavia\Enums\Health;
