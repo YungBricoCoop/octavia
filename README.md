@@ -25,7 +25,7 @@
 ## 🤖 How does it work?
 
 The framework is based on a `RequestHandler` object that will register the routes and handle the incoming requests.
-You can register a route by calling the `get`, `post`, `put`, `patch`, `delete`, `options`, `head`, `upload` methods of the `RequestHandler` object. 
+You can register a route by calling the `get`, `post`, `put`, `patch`, `delete`, `options`, `head`, `upload` methods of the `RequestHandler` object.
 
 ### Callback parameters order
 
@@ -37,7 +37,7 @@ You can register a route by calling the `get`, `post`, `put`, `patch`, `delete`,
 
 Callbacks will always be called with a minimum of 3 parameters: `$q`, `$b`, `$s`.
 
-**Example**:  /say_hello/{name:string}?age=20
+**Example**: /say_hello/{name:string}?age=20
 
 ```php
 ($name, $q, $b, $s) => {return "Hello " . $name . " you are " . $q->age . " years old";}
@@ -46,10 +46,13 @@ Callbacks will always be called with a minimum of 3 parameters: `$q`, `$b`, `$s`
 ### Type/Object/File validation
 
 #### Path parameters
+
 You can validate the type of a path parameter by adding the type after the parameter name. The supported types are: `int`, `string`. Example: `/say_hello/{name:string}`, `/say_hello/{age:int}`.
 
 #### Query parameters
-You can validate the query params by giving an array of strings `["age", "name"]` or a class. An array of string can only be used to verifiy if the params are present, but it will not check their type. To validate the types of multiple query parameters use a `Class``. If we want to validate the query parameters `age` and `name` we can do it like this:
+
+You can validate the query params by giving an array of strings `["age", "name"]` or a class. An array of string can only be used to verifiy if the params are present, but it will not check their type. To validate the types of multiple query parameters use a ` Class``. If we want to validate the query parameters  `age`and`name` we can do it like this:
+
 ```php
 class User
 {
@@ -57,6 +60,25 @@ class User
 	public int $age;
 }
 ```
+
+### Route functions chaining
+
+When defining a route, you can chain multiple functions to it. So for example if you want to make a requires the user to be logged , require a query param and send back html, you can do it like this:
+
+```php
+$handler->get("/hello", function ($q, $b, $s) {
+	return "<h1>Hello " . $q->name . "</h1>";
+})->q(["name"])->login()->html();
+```
+
+Available functions:
+
+-   `q` or `query`: Validate the query parameters.
+-   `b` or `body`: Validate the body parameters.
+-   `login`: Check if the user is logged in.
+-   `admin`: Check if the user is logged in and is an admin.
+-   `html`: Set the response content type to `text/html`.
+-   `f`: Callback function to be called after the route function.
 
 ### Middleware
 
@@ -90,6 +112,7 @@ class JsonMiddleware implements MiddlewareInterface
 ```
 
 ### Htaccess
+
 Since the framework is based on a single entry point, you will need to redirect all the requests to your main file. Here is an example of a `.htaccess` file that will redirect all the requests to the `src/main.php` file.
 
 ```apacheconf
@@ -152,4 +175,5 @@ Here is more examples:
 -   [ ] Health check endpoint, md5 digest auth
 
 ## 📈 Stats
+
 [![wakatime](https://wakatime.com/badge/user/ee872f10-6167-41c6-8aad-e80d7519df4c/project/dfd2622d-4d56-45f0-bdff-1c14002e441a.svg?style=for-the-badge)](https://wakatime.com/badge/user/ee872f10-6167-41c6-8aad-e80d7519df4c/project/dfd2622d-4d56-45f0-bdff-1c14002e441a)

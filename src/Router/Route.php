@@ -27,6 +27,7 @@ class Route implements RouteInterface
 	public ?Body $body;
 	public bool $requires_login;
 	public bool $requires_admin;
+	public bool $return_html;
 
 	public function __construct($name, $type, $path, $path_segments, $dynamic_segments_types, $func)
 	{
@@ -38,6 +39,7 @@ class Route implements RouteInterface
 		$this->dynamic_segments_values = [];
 		$this->requires_login = false;
 		$this->requires_admin = false;
+		$this->return_html = false;
 		$this->func = $func;
 
 		$this->query = new Query();
@@ -78,6 +80,12 @@ class Route implements RouteInterface
 	public function b($params): self
 	{
 		$this->body->set_required_body($params);
+		return $this;
+	}
+
+	public function html(): self
+	{
+		$this->return_html = true;
 		return $this;
 	}
 

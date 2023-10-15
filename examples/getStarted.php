@@ -34,6 +34,10 @@ $handler->get("/hello/{name}", function ($name, $q, $b) {
 	return "Hello $name";
 });
 
+$handler->get("/hello/{name}/html", function ($name, $q, $b) {
+	return "<html><body><h1>Hello $name</h1></body></html>";
+})->html();
+
 $handler->post("/register", function ($q, $b) {
 	return "User $b->username registered successfully, using $q->language language";
 })->query(["language"])->body(RegisterUser::class);

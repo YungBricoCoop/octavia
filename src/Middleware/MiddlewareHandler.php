@@ -72,12 +72,19 @@ class MiddlewareHandler
 	/**
 	 * Pass the response through the middleware stack.
 	 * @param Response $response
+	 * @param bool $return_html
 	 * @return Response
 	 */
-	public function handle_after(Response $response)
+	public function handle_after(Response $response, bool $return_html = false)
 	{
 		$middlewares = $this->middlewares;
 		foreach ($middlewares as $middleware) {
+			if ($return_html && $middleware instanceof JsonMiddleware) {
+				$htmlMiddleware = new HtmlMiddleware();
+				$response = $htmlMiddleware->handle_after($response);
+				continue;
+			}
+
 			$response = $middleware->handle_after($response);
 		}
 

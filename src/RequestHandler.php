@@ -307,7 +307,7 @@ class RequestHandler implements RequestHandlerInterface
 		}
 
 		// process the response with the middlewares
-		$this->response = $this->middleware_handler->handle_after($this->response);
+		$this->response = $this->middleware_handler->handle_after($this->response, $route->return_html);
 
 		// send the response
 		$this->response->send();
