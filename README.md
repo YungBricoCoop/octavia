@@ -89,6 +89,20 @@ class JsonMiddleware implements MiddlewareInterface
 }
 ```
 
+### Htaccess
+Since the framework is based on a single entry point, you will need to redirect all the requests to your main file. Here is an example of a `.htaccess` file that will redirect all the requests to the `src/main.php` file.
+
+```apacheconf
+RewriteEngine On
+
+# If the request is not for an existing file or directory
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Rewrite the URL to the main.php file, preserving the rest of the URL
+RewriteRule ^(.*)$ src/main.php?route=/$1 [L,QSA]
+```
+
 ## 📋 Examples
 
 Here is a simple example of an Octavia application:
