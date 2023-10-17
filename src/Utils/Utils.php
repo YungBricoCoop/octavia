@@ -289,11 +289,21 @@ class Utils
 		return $_SERVER['PHP_AUTH_USER'] === $username && $_SERVER['PHP_AUTH_PW'] === $password;
 	}
 
-	public static function load_env(string $env_file)
+	/**
+	 * Load env file
+	 * @param string $env_file
+	 * @return void
+	 */
+	public static function load_env(string $env_file): bool
 	{
 		$dir = dirname($env_file);
 		$file = basename($env_file);
-		$dotenv = Dotenv::createImmutable($dir);
-		$dotenv->load($file);
+		try {
+			$dotenv = Dotenv::createImmutable($dir);
+			$dotenv->load($file);
+			return true;
+		} catch (\Exception $e) {
+			return false;
+		}
 	}
 }
