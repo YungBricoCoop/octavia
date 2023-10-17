@@ -4,8 +4,6 @@ namespace ybc\octavia;
 
 require_once "Exceptions.php";
 
-use CustomException, ForbiddenException, UnauthorizedException, MethodNotAllowedException, NotFoundException, ConflictException, InternalServerErrorException;
-use Exception;
 use ybc\octavia\Config\Config;
 use ybc\octavia\Interfaces\RequestHandlerInterface;
 use ybc\octavia\Router\Router;
@@ -27,7 +25,6 @@ class RequestHandler implements RequestHandlerInterface
 	private $base_path = "";
 
 	public MiddlewareHandler $middleware_handler;
-	public ?Log $logger = null;
 
 	/**
 	 * Create a new RequestHandler
@@ -40,7 +37,6 @@ class RequestHandler implements RequestHandlerInterface
 		$this->router = new Router();
 		$this->middleware_handler = new MiddlewareHandler();
 		$this->middleware_handler->add(new JsonMiddleware());
-		$this->logger = new Log("RequestHandlerLogger");
 		$this->session = $session ?? new Session();
 		$this->response = new Response();
 		$this->base_path = Utils::get_path_from_backtrace(1);
@@ -143,8 +139,8 @@ class RequestHandler implements RequestHandlerInterface
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
 			$route = $this->router->register($prefix, $name, new RouteTypes\Upload(), $path, $func);
 			$route->upload->set_params(OCTAVIA_UPLOAD_DIR, $allow_multiple_files, $allowed_extensions, $max_size);
-		} catch (Exception $e) {
-			$this->logger->error($e->getMessage(), $e->getTrace());
+		} catch (\Exception $e) {
+			Log::error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";
 		}
 
@@ -168,8 +164,8 @@ class RequestHandler implements RequestHandlerInterface
 			$prefix_path = Utils::get_path_from_backtrace(1);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
 			$route = $this->router->register($prefix, $name, new RouteTypes\Health($auth_required), $path, $func);
-		} catch (Exception $e) {
-			$this->logger->error($e->getMessage(), $e->getTrace());
+		} catch (\Exception $e) {
+			Log::error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";
 		}
 
@@ -192,8 +188,8 @@ class RequestHandler implements RequestHandlerInterface
 			$prefix_path = Utils::get_path_from_backtrace(1);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
 			$route = $this->router->register($prefix, $name, new RouteTypes\GoogleOAuth(), $path, $func);
-		} catch (Exception $e) {
-			$this->logger->error($e->getMessage(), $e->getTrace());
+		} catch (\Exception $e) {
+			Log::error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";
 		}
 
@@ -215,8 +211,8 @@ class RequestHandler implements RequestHandlerInterface
 			$prefix_path = Utils::get_path_from_backtrace(2);
 			$prefix = Utils::extract_folder_diff($this->base_path, $prefix_path);
 			$route = $this->router->register($prefix, $name, $method, $path, $func);
-		} catch (Exception $e) {
-			$this->logger->error($e->getMessage(), $e->getTrace());
+		} catch (\Exception $e) {
+			Log::error($e->getMessage(), $e->getTrace());
 			$this->response->data = "INTERNAL_SERVER_ERROR";
 		}
 
@@ -233,7 +229,7 @@ class RequestHandler implements RequestHandlerInterface
 			$this->handle_request_with_exception();
 		} catch (CustomException $e) {
 			if ($e->getDetail()) {
-				$this->logger->error($e->getMessage() . "(" . $e->getDetail() . ")", $e->getTrace());
+				Log::error($e->getMessage() . "(" . $e->getDetail() . ")", $e->getTrace());
 			}
 			$this->send_response($e->getMessage(), $e->getCode());
 		} catch (\Exception $e) {
@@ -244,7 +240,7 @@ class RequestHandler implements RequestHandlerInterface
 			// merge the exception type with the exception message
 			$exception_message = $exception_type . ": " . $e->getMessage();
 
-			$this->logger->error($exception_message, $e->getTrace());
+			Log::error($exception_message, $e->getTrace());
 			$this->send_response("INTERNAL_SERVER_ERROR", 500);
 		}
 	}
@@ -267,7 +263,7 @@ class RequestHandler implements RequestHandlerInterface
 			throw new NotFoundException();
 		}
 
-		$this->logger->info("[$request->method] $route->path ($ip)");
+		Log::info("[$request->method] $route->path ($ip)");
 
 		// set the query, body and files
 		$route->query->set_data($request->query_params);
@@ -331,7 +327,7 @@ class RequestHandler implements RequestHandlerInterface
 			$this->response->send();
 		} catch (\Exception $e) {
 			// if the middlewares create exceptions, default the response to json with code 500
-			$this->logger->error($e->getMessage(), $e->getTrace());
+			Log::error($e->getMessage(), $e->getTrace());
 			$this->response->data = json_encode("INTERNAL_SERVER_ERROR");
 			$this->response->status_code = 500;
 			$this->response->send();

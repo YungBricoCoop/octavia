@@ -6,12 +6,7 @@ use ybc\octavia\Utils\Utils;
 use ybc\octavia\Interfaces\RouteInterface;
 use ybc\octavia\Router\RouteTypes\RouteType;
 
-use WrongPathParameterTypeException;
-use MissingBodyParameterException;
-use MissingQueryParameterException;
-use WrongQueryParameterTypeException;
-use MissingObjectPropertyException;
-use WrongObjectPropertyTypeException;
+use ybc\octavia\{WrongPathParameterTypeException, MissingBodyParameterException, MissingQueryParameterException, WrongQueryParameterTypeException, MissingObjectPropertyException, WrongObjectPropertyTypeException};
 
 class Route implements RouteInterface
 {

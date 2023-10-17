@@ -1,11 +1,13 @@
 <?php
 
-class CustomException extends Exception
+namespace ybc\octavia;
+
+class CustomException extends \Exception
 {
 	protected $status_code = 200;
 	protected $detail = null;
 
-	public function __construct($detail = null, $message = null, $code = 0, Exception $previous = null)
+	public function __construct($detail = null, $message = null, $code = 0, \Exception $previous = null)
 	{
 		$this->detail = $detail;
 		if (is_null($message)) {

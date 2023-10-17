@@ -3,7 +3,7 @@
 namespace ybc\octavia\Router;
 
 use ybc\octavia\Utils\Utils;
-use MissingQueryParameterException, WrongQueryParameterTypeException;
+use ybc\octavia\{MissingQueryParameterException, WrongQueryParameterTypeException};
 
 class Query
 {

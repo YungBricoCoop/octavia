@@ -7,6 +7,10 @@ class FrameworkConfig
 	public static function get()
 	{
 		return [
+			// CONFIG
+			"CONFIG_PREFIX" => "OCTAVIA_",
+			"CONFIG_ENV_FILE" => ".env",
+			
 			// UPLOAD
 			"UPLOAD_DIR" => "uploads",
 			"UPLOAD_MAX_SIZE" => "10MB",

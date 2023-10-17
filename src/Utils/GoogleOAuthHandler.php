@@ -76,12 +76,9 @@ class GoogleOAuthHandler
     private string $data_path = OCTAVIA_GOOGLE_OAUTH_DATA_PATH;
     private string $config_path = OCTAVIA_GOOGLE_OAUTH_CONFIG_PATH;
     private string $session_key = 'google_oauth_data';
-    private Log $logger;
 
     public function __construct()
     {
-        $this->logger = new Log("GoogleOAuth");
-
         if (!session_id()) {
             session_start();
         }
@@ -193,7 +190,7 @@ class GoogleOAuthHandler
      */
     private function _refresh_access_token(string $refresh_token): GoogleOAuthData
     {
-        $this->logger->info("Refreshing Google OAuth access token");
+        Log::info("Refreshing Google OAuth access token");
 
         // Handle the refreshing of the access token
         $client = new Google_Client();
@@ -279,7 +276,7 @@ class GoogleOAuthHandler
      */
     public function handle_initial_prompt(string $redirect_uri): bool
     {
-        $this->logger->info("Handling initial Google OAuth prompt");
+        Log::info("Handling initial Google OAuth prompt");
         $client = new Google_Client();
         $client->setAuthConfig($this->config_path);
         $client->addScope(Google_Service_Gmail::MAIL_GOOGLE_COM);
@@ -298,7 +295,7 @@ class GoogleOAuthHandler
 
         // Check for errors
         if (isset($token['error']) || !isset($token['access_token'])) {
-            $this->logger->error("Error while fetching access token");
+            Log::error("Error while fetching access token");
             return false;
         }
 

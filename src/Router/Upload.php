@@ -3,7 +3,7 @@
 namespace ybc\octavia\Router;
 
 use ybc\octavia\Utils\Utils;
-use MultipleFilesNotAllowedException, FileUploadErrorException, FileSizeExceededException, FileTypeNotAllowedException;
+use ybc\octavia\{MultipleFilesNotAllowedException, FileUploadErrorException, FileSizeExceededException, FileTypeNotAllowedException};
 
 class Upload
 {

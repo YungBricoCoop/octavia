@@ -3,7 +3,7 @@
 namespace ybc\octavia\Router;
 
 use ybc\octavia\Utils\Utils;
-use MissingBodyParameterException, MissingObjectPropertyException, WrongObjectPropertyTypeException;
+use ybc\octavia\{MissingBodyParameterException, MissingObjectPropertyException, WrongObjectPropertyTypeException};
 
 class Body
 {
