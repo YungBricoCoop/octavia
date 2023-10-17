@@ -8,16 +8,17 @@ use Monolog\Formatter\LineFormatter;
 
 class Log
 {
-	private $logger;
+	private static $instance;
 
+	private $logger;
 	private $name;
 	private $log_dir;
 	private $log_file;
-	private $date_format;
+	private $log_date_format;
+	private $log_date_timezone;
 	private $log_format;
-	private $level;
+	private $log_level;
 	private $max_files;
-	private static $instance;
 
 	public static function get_instance()
 	{
@@ -29,10 +30,12 @@ class Log
 
 	private function __construct()
 	{
+		$this->name = OCTAVIA_LOG_NAME;
 		$this->log_file = OCTAVIA_LOG_FILE;
 		$this->log_format = OCTAVIA_LOG_FORMAT;
-		$this->date_format = OCTAVIA_LOG_DATE_FORMAT;
-		$this->level = OCTAVIA_LOG_LEVEL;
+		$this->log_date_format = OCTAVIA_LOG_DATE_FORMAT;
+		$this->log_date_timezone = new \DateTimeZone(OCTAVIA_LOG_TIMEZONE); 
+		$this->log_level = OCTAVIA_LOG_LEVEL;
 		$this->max_files = OCTAVIA_LOG_MAX_FILES;
 		$this->log_dir = $this->get_log_dir(OCTAVIA_LOG_DIR);
 
@@ -42,10 +45,11 @@ class Log
 
 	private function init_logger()
 	{
-		$formatter = new LineFormatter($this->log_format, $this->date_format, true, true);
-		$rotating_handler = new RotatingFileHandler($this->log_dir . DIRECTORY_SEPARATOR . $this->log_file, $this->max_files, $this->level);
+		$formatter = new LineFormatter($this->log_format, $this->log_date_format, true, true);
+		$rotating_handler = new RotatingFileHandler($this->log_dir . DIRECTORY_SEPARATOR . $this->log_file, $this->max_files, $this->log_level);
 		$rotating_handler->setFormatter($formatter);
-
+		
+		$this->logger->setTimezone($this->log_date_timezone);
 		$this->logger->setHandlers([$rotating_handler]);
 	}
 
@@ -73,7 +77,7 @@ class Log
 	public static function info($message, array $context = [])
 	{
 		$log = self::get_instance();
-		$log->info($message, $context);
+		$log->logger->info($message, $context);
 	}
 
 	/**
@@ -85,7 +89,7 @@ class Log
 	public static function error($message, array $context = [])
 	{
 		$log = self::get_instance();
-		$log->error($message, $context);
+		$log->logger->error($message, $context);
 	}
 
 	/**
@@ -97,7 +101,7 @@ class Log
 	public static function warning($message, array $context = [])
 	{
 		$log = self::get_instance();
-		$log->warning($message, $context);
+		$log->logger->warning($message, $context);
 	}
 
 	/**
@@ -109,6 +113,6 @@ class Log
 	public static function debug($message, array $context = [])
 	{
 		$log = self::get_instance();
-		$log->debug($message, $context);
+		$log->logger->debug($message, $context);
 	}
 }

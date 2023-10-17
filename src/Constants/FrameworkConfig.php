@@ -23,9 +23,11 @@ class FrameworkConfig
 			"SESSION_IS_ADMIN_KEY" => "is_admin",
 
 			// LOG
+			"LOG_NAME" => "octavia",
 			"LOG_DIR" => "logs",
 			"LOG_FILE" => "octavia.log",
 			"LOG_FILE_FORMAT" => "d-m-Y",
+			"LOG_TIMEZONE" => "Europe/Berlin",
 			"LOG_LEVEL" => "DEBUG",
 			"LOG_FORMAT" => "[%level_name%] %datetime% : %message% %context% %extra%\n",
 			"LOG_DATE_FORMAT" => "d-m-Y H:i:s",
