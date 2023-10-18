@@ -178,6 +178,9 @@ Here is more examples:
 -   [x] Session manager
 -   [ ] Improve security
 -   [x] Health check endpoint, basic auth
+-   [x] Serve static files
+-   [ ] Return a file
+-   [ ] Rate limit
 
 ## 📈 Stats
 
