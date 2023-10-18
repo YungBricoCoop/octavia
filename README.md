@@ -19,6 +19,8 @@
 -   Middleware support
 -   Template engine
 -   Session manager
+-   Health check endpoint
+-   Google OAuth
 
 ## 🚀 Quickstart
 
@@ -153,9 +155,12 @@ $handler->handle_request();
 Here is more examples:
 
 -   [Get started](examples/getStarted.php) - A simple example showcasing the basic features of Octavia (Query and body parameters validation).
+-   [Config](examples/config) - Showcase how to use the config file.
 -   [File system based routing](examples/fileSystemRouting) - Showcase how to use file system based routing.
 -   [Session](examples/session) - Showcase how to use session manager (Basic user login/logout).
 -   [Upload](examples/upload) - Showcase how to upload files.
+-   [Health](examples/health) - Showcase how to use the health check endpoint.
+-   [OAuth](examples/oauth) - Showcase how to use the Google OAuth.
 
 ## 📝 Todo
 
@@ -172,7 +177,7 @@ Here is more examples:
 -   [x] Template engine
 -   [x] Session manager
 -   [ ] Improve security
--   [ ] Health check endpoint, md5 digest auth
+-   [x] Health check endpoint, basic auth
 
 ## 📈 Stats
 
