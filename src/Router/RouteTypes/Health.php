@@ -4,7 +4,7 @@ namespace ybc\octavia\Router\RouteTypes;
 
 use ybc\octavia\Router\Route;
 use ybc\octavia\Utils\Utils;
-use UnauthorizedException;
+use ybc\octavia\UnauthorizedException;
 
 class Health extends RouteType
 {

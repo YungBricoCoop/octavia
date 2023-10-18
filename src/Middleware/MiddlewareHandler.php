@@ -2,48 +2,64 @@
 
 namespace ybc\octavia\Middleware;
 
-use ybc\octavia\Interfaces\MiddlewareInterface;
-use ybc\octavia\Request;
-use ybc\octavia\Response;
+use ybc\octavia\Interfaces\{InputMiddlewareInterface, OutputMiddlewareInterface};
+use ybc\octavia\Middleware\Output\{JsonEncode, HtmlEncode};
+use ybc\octavia\{Request, Response};
 
 
 class MiddlewareHandler
 {
-	/** @var MiddlewareInterface[] */
-	private $middlewares = [];
+	/** @var InputMiddlewareInterface[] */
+	private $input_middlewares = [];
 
-	public function __construct($middlewares = [])
+	/** @var OutputMiddlewareInterface[] */
+	private $output_middlewares = [];
+
+	public function __construct($input_middlewares = [], $output_middlewares = [])
 	{
-		$this->middlewares = $middlewares;
+		$this->input_middlewares = $input_middlewares;
+		$this->output_middlewares = $output_middlewares;
 	}
 
 	/**
 	 * Add a middleware to the stack.
 	 * The stack will be executed in the order the middlewares were added.
-	 * @param MiddlewareInterface $middleware
+	 * @param InputMiddlewareInterface|OutputMiddlewareInterface $middleware
 	 * @return $this
 	 */
-	public function add(MiddlewareInterface $middleware)
+	public function add($middleware)
 	{
-		$this->middlewares[] = $middleware;
+		if ($middleware instanceof OutputMiddlewareInterface) {
+			$this->output_middlewares[] = $middleware;
+			return $this;
+		}
+
+		// Default to input middleware
+		$this->input_middlewares[] = $middleware;
 		return $this;
 	}
 
 	/**
 	 * Add a middleware to the beginning of the stack.
-	 * @param MiddlewareInterface $middleware
+	 * @param InputMiddlewareInterface|OutputMiddlewareInterface $middleware
 	 * @return $this
 	 */
-	public function add_before(MiddlewareInterface $middleware)
+	public function add_before($middleware)
 	{
-		array_unshift($this->middlewares, $middleware);
+		if ($middleware instanceof OutputMiddlewareInterface) {
+			array_unshift($this->output_middlewares, $middleware);
+			return $this;
+		}
+
+		// Default to input middleware
+		array_unshift($this->input_middlewares, $middleware);
 		return $this;
 	}
 
 	/**
 	 * Add multiple middlewares to the stack.
 	 * The stack will be executed in the order the middlewares were added.
-	 * @param MiddlewareInterface[] $middlewares
+	 * @param InputMiddlewareInterface[]|OutputMiddlewareInterface[] $middlewares
 	 * @return $this
 	 */
 	public function add_many($middlewares)
@@ -61,9 +77,9 @@ class MiddlewareHandler
 	 */
 	public function handle_before(Request $request)
 	{
-		$middlewares = $this->middlewares;
+		$middlewares = $this->input_middlewares;
 		foreach ($middlewares as $middleware) {
-			$request = $middleware->handle_before($request);
+			$request = $middleware->handle($request);
 		}
 
 		return $request;
@@ -77,15 +93,15 @@ class MiddlewareHandler
 	 */
 	public function handle_after(Response $response, bool $return_html = false)
 	{
-		$middlewares = $this->middlewares;
+		$middlewares = $this->output_middlewares;
 		foreach ($middlewares as $middleware) {
-			if ($return_html && $middleware instanceof JsonMiddleware) {
-				$htmlMiddleware = new HtmlMiddleware();
-				$response = $htmlMiddleware->handle_after($response);
+			if ($return_html && $middleware instanceof JsonEncode) {
+				$htmlMiddleware = new HtmlEncode();
+				$response = $htmlMiddleware->handle($response);
 				continue;
 			}
 
-			$response = $middleware->handle_after($response);
+			$response = $middleware->handle($response);
 		}
 
 		return $response;

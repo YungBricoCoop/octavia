@@ -9,7 +9,8 @@ use ybc\octavia\Interfaces\RequestHandlerInterface;
 use ybc\octavia\Router\Router;
 use ybc\octavia\Router\Route;
 use ybc\octavia\Middleware\MiddlewareHandler;
-use ybc\octavia\Middleware\JsonMiddleware;
+use ybc\octavia\Middleware\Input\JsonDecode;
+use ybc\octavia\Middleware\Output\JsonEncode;
 use ybc\octavia\Utils\Utils;
 use ybc\octavia\Utils\Log;
 use ybc\octavia\Utils\Session;
@@ -36,7 +37,10 @@ class RequestHandler implements RequestHandlerInterface
 		Config::load($config);
 		$this->router = new Router();
 		$this->middleware_handler = new MiddlewareHandler();
-		$this->middleware_handler->add(new JsonMiddleware());
+		$this->middleware_handler->add_many([
+			new JsonDecode(),
+			new JsonEncode(),
+		]);
 		$this->session = $session ?? new Session();
 		$this->response = new Response();
 		$this->base_path = Utils::get_path_from_backtrace(1);
