@@ -2,67 +2,47 @@
 
 namespace ybc\octavia\Middleware;
 
-use ybc\octavia\Interfaces\{InputMiddlewareInterface, OutputMiddlewareInterface};
 use ybc\octavia\Middleware\Output\{JsonEncode, HtmlEncode};
-use ybc\octavia\{Request, Response};
-
+use ybc\octavia\Enums\MiddlewareStages;
 
 class MiddlewareHandler
 {
-	/** @var InputMiddlewareInterface[] */
-	private $input_middlewares = [];
-
-	/** @var OutputMiddlewareInterface[] */
-	private $output_middlewares = [];
-
-	public function __construct($input_middlewares = [], $output_middlewares = [])
-	{
-		$this->input_middlewares = $input_middlewares;
-		$this->output_middlewares = $output_middlewares;
-	}
+	private $middlewares = [
+		MiddlewareStages::BEFORE_ROUTING->value => [],
+		MiddlewareStages::AFTER_ROUTING->value => [],
+		MiddlewareStages::BEFORE_OUTPUT->value => [],
+	];
 
 	/**
 	 * Add a middleware to the stack.
 	 * The stack will be executed in the order the middlewares were added.
-	 * @param InputMiddlewareInterface|OutputMiddlewareInterface $middleware
+	 * @param Middleware $middleware
 	 * @return $this
 	 */
-	public function add($middleware)
+	public function add(Middleware $middleware)
 	{
-		if ($middleware instanceof OutputMiddlewareInterface) {
-			$this->output_middlewares[] = $middleware;
-			return $this;
-		}
-
-		// Default to input middleware
-		$this->input_middlewares[] = $middleware;
+		$this->middlewares[$middleware->stage->value][] = $middleware;
 		return $this;
 	}
 
 	/**
 	 * Add a middleware to the beginning of the stack.
-	 * @param InputMiddlewareInterface|OutputMiddlewareInterface $middleware
+	 * @param Middleware $middleware
 	 * @return $this
 	 */
-	public function add_before($middleware)
+	public function add_before(Middleware $middleware)
 	{
-		if ($middleware instanceof OutputMiddlewareInterface) {
-			array_unshift($this->output_middlewares, $middleware);
-			return $this;
-		}
-
-		// Default to input middleware
-		array_unshift($this->input_middlewares, $middleware);
+		array_unshift($this->middlewares[$middleware->stage->value], $middleware);
 		return $this;
 	}
 
 	/**
 	 * Add multiple middlewares to the stack.
 	 * The stack will be executed in the order the middlewares were added.
-	 * @param InputMiddlewareInterface[]|OutputMiddlewareInterface[] $middlewares
+	 * @param array $middlewares
 	 * @return $this
 	 */
-	public function add_many($middlewares)
+	public function add_many(array $middlewares)
 	{
 		foreach ($middlewares as $middleware) {
 			$this->add($middleware);
@@ -71,39 +51,24 @@ class MiddlewareHandler
 	}
 
 	/**
-	 * Pass the request through the middleware stack.
-	 * @param Request $request
-	 * @return Request
+	 * Handle the request through the middleware stack.
+	 * @param MiddlewareStages $stage, the stage of the middleware stack to handle
+	 * @param Context $context
+	 * @return Context
 	 */
-	public function handle_before(Request $request)
+	public function handle(MiddlewareStages $stage, Context $context)
 	{
-		$middlewares = $this->input_middlewares;
+		$middlewares = $this->middlewares[$stage->value];
 		foreach ($middlewares as $middleware) {
-			$request = $middleware->handle($request);
-		}
-
-		return $request;
-	}
-
-	/**
-	 * Pass the response through the middleware stack.
-	 * @param Response $response
-	 * @param bool $return_html
-	 * @return Response
-	 */
-	public function handle_after(Response $response, bool $return_html = false)
-	{
-		$middlewares = $this->output_middlewares;
-		foreach ($middlewares as $middleware) {
-			if ($return_html && $middleware instanceof JsonEncode) {
-				$htmlMiddleware = new HtmlEncode();
-				$response = $htmlMiddleware->handle($response);
+			if ($context->route->return_html && $middleware instanceof JsonEncode) {
+				$html_middleware = new HtmlEncode();
+				$context = $html_middleware->handle($context);
 				continue;
 			}
 
-			$response = $middleware->handle($response);
+			$context = $middleware->handle($context);
 		}
 
-		return $response;
+		return $context;
 	}
 }

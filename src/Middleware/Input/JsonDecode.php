@@ -2,14 +2,13 @@
 
 namespace ybc\octavia\Middleware\Input;
 
-use ybc\octavia\Interfaces\InputMiddlewareInterface;
-use ybc\octavia\Request;
+use ybc\octavia\Middleware\{Context, Middleware};
 
-class JsonDecode implements InputMiddlewareInterface
+class JsonDecode extends Middleware
 {
-	public function handle(Request $request)
+	public function handle(Context $ctx): Context
 	{
-		$request->body = json_decode(file_get_contents('php://input'), true);
-		return $request;
+		$ctx->request->body = json_decode(file_get_contents('php://input'), true);
+		return $ctx;
 	}
 }

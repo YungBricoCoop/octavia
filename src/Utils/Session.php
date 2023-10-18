@@ -4,7 +4,17 @@ namespace ybc\octavia\Utils;
 
 class Session
 {
-	public function __construct($options = [])
+	private static $instance = null;
+
+	public static function get_instance($options = [])
+	{
+		if (self::$instance === null) {
+			self::$instance = new Session($options);
+		}
+		return self::$instance;
+	}
+
+	private function __construct($options = [])
 	{
 		if (session_status() == PHP_SESSION_NONE) {
 			ini_set('session.gc_maxlifetime', OCTAVIA_SESSION_LIFETIME);

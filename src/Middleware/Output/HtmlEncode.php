@@ -2,16 +2,17 @@
 
 namespace ybc\octavia\Middleware\Output;
 
-use ybc\octavia\Interfaces\OutputMiddlewareInterface;
-use ybc\octavia\Response;
+use ybc\octavia\Enums\MiddlewareStages;
+use ybc\octavia\Middleware\{Context, Middleware};
 
-class HtmlEncode implements OutputMiddlewareInterface
+class HtmlEncode extends Middleware
 {
-	public function handle(Response $response)
+	public $stage = MiddlewareStages::BEFORE_OUTPUT;
+	public function handle(Context $ctx): Context
 	{
-		$response->data = $response->data;
-		$response->headers['Content-Type'] = 'text/html';
+		$ctx->response->data = $ctx->response->data;
+		$ctx->response->headers['Content-Type'] = 'text/html';
 
-		return $response;
+		return $ctx;
 	}
 }

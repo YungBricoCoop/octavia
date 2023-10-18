@@ -5,7 +5,9 @@ namespace ybc\octavia;
 require_once "Exceptions.php";
 
 use ybc\octavia\Config\Config;
+use ybc\octavia\Enums\MiddlewareStages;
 use ybc\octavia\Interfaces\RequestHandlerInterface;
+use ybc\octavia\Middleware\Context;
 use ybc\octavia\Router\Router;
 use ybc\octavia\Router\Route;
 use ybc\octavia\Middleware\MiddlewareHandler;
@@ -30,9 +32,8 @@ class RequestHandler implements RequestHandlerInterface
 	/**
 	 * Create a new RequestHandler
 	 * @param array $config The config array
-	 * @param array $session Instance of Session
 	 */
-	public function __construct($config = [], Session $session = null)
+	public function __construct($config = [])
 	{
 		Config::load($config);
 		$this->router = new Router();
@@ -41,7 +42,7 @@ class RequestHandler implements RequestHandlerInterface
 			new JsonDecode(),
 			new JsonEncode(),
 		]);
-		$this->session = $session ?? new Session();
+		$this->session = Session::get_instance();
 		$this->response = new Response();
 		$this->base_path = Utils::get_path_from_backtrace(1);
 	}
@@ -257,7 +258,8 @@ class RequestHandler implements RequestHandlerInterface
 		$request = new Request();
 
 		// Process the request with the middlewares
-		$request = $this->middleware_handler->handle_before($request);
+		$context = new Context($request);
+		$context = $this->middleware_handler->handle(MiddlewareStages::BEFORE_ROUTING, $context);
 
 		// route the request
 		$path = $request->query_params["route"] ?? "";
@@ -273,6 +275,9 @@ class RequestHandler implements RequestHandlerInterface
 		$route->query->set_data($request->query_params);
 		$route->body->set_data($request->body);
 		$route->upload->set_files($request->files);
+
+		$context->route = $route;
+		$context = $this->middleware_handler->handle(MiddlewareStages::AFTER_ROUTING, $context);
 
 		// check if the user is logged in and if the user is allowed to access the route
 		if ($route->requires_login && !$this->session->is_logged()) {
@@ -306,11 +311,13 @@ class RequestHandler implements RequestHandlerInterface
 			$this->response = new Response($result);
 		}
 
+		$context->response = $this->response;
+
 		// process the response with the middlewares
-		$this->response = $this->middleware_handler->handle_after($this->response, $route->return_html);
+		$context = $this->middleware_handler->handle(MiddlewareStages::BEFORE_OUTPUT, $context);
 
 		// send the response
-		$this->response->send();
+		$context->response->send();
 	}
 
 	/**

@@ -2,16 +2,17 @@
 
 namespace ybc\octavia\Middleware\Output;
 
-use ybc\octavia\Interfaces\OutputMiddlewareInterface;
-use ybc\octavia\Response;
+use ybc\octavia\Enums\MiddlewareStages;
+use ybc\octavia\Middleware\{Context, Middleware};
 
-class JsonEncode implements OutputMiddlewareInterface
+class JsonEncode extends Middleware
 {
-	public function handle(Response $response)
+	public $stage = MiddlewareStages::BEFORE_OUTPUT;
+	public function handle(Context $ctx): Context
 	{
-		$response->data = json_encode(["data" => $response->data]);
-		$response->headers['Content-Type'] =  'application/json';
+		$ctx->response->data = json_encode(["data" => $ctx->response->data]);
+		$ctx->response->headers['Content-Type'] =  'application/json';
 
-		return $response;
+		return $ctx;
 	}
 }
