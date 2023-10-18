@@ -195,7 +195,8 @@ class GoogleOAuthHandler
         // Handle the refreshing of the access token
         $client = new Google_Client();
         $client->setAuthConfig($this->config_path);
-        $client->addScope(Google_Service_Gmail::MAIL_GOOGLE_COM);
+		//TODO: Add possibility to define custom scopes
+        $client->setScopes(OCTAVIA_GOOGLE_OAUTH_SCOPES);
         $client->setAccessType('offline');
         $client->fetchAccessTokenWithRefreshToken($refresh_token);
 

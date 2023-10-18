@@ -41,6 +41,7 @@ class FrameworkConfig
 			// GOOGLE OAUTH
 			"GOOGLE_OAUTH_DATA_PATH" => "tokens.json",
 			"GOOGLE_OAUTH_CONFIG_PATH" => "oauth2.json",
+			"GOOGLE_OAUTH_SCOPES" => ["https://mail.google.com/"]
 		];
 	}
 }
