@@ -7,7 +7,7 @@ use ybc\octavia\Interfaces\RouteInterface;
 use ybc\octavia\Router\RouteTypes\RouteType;
 
 use ybc\octavia\{WrongPathParameterTypeException, MissingBodyParameterException, MissingQueryParameterException, WrongQueryParameterTypeException, MissingObjectPropertyException, WrongObjectPropertyTypeException};
-use ybc\octavia\Middleware\Middleware;
+use ybc\octavia\Middleware\{Middleware, MiddlewareIdentifier};
 use ybc\octavia\Enums\MiddlewareStages;
 
 class Route implements RouteInterface
@@ -25,7 +25,7 @@ class Route implements RouteInterface
 	public bool $requires_login;
 	public bool $requires_admin;
 	public bool $return_html;
-	private $middlewares = [
+	public $middlewares = [
 		MiddlewareStages::AFTER_ROUTING->value => [],
 		MiddlewareStages::BEFORE_OUTPUT->value => [],
 	];
@@ -84,19 +84,12 @@ class Route implements RouteInterface
 		return $this;
 	}
 
-	public function html(): self
-	{
-		$this->return_html = true;
-		return $this;
-	}
-
 	public function f($func): self
 	{
 		$this->func = $func;
 		return $this;
 	}
 
-	//dynamic function to add middlewares
 	public function __call($middleware_identifier, $arguments)
 	{
 		$middleware_class = $this->find_middleware_with_identifier($middleware_identifier);

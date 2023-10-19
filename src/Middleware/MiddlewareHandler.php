@@ -4,6 +4,7 @@ namespace ybc\octavia\Middleware;
 
 use ybc\octavia\Middleware\Output\{JsonEncode, HtmlEncode};
 use ybc\octavia\Enums\MiddlewareStages;
+use ybc\octavia\Router\Route;
 
 class MiddlewareHandler
 {
@@ -58,15 +59,29 @@ class MiddlewareHandler
 	 */
 	public function handle(MiddlewareStages $stage, Context $context)
 	{
-		$middlewares = $this->middlewares[$stage->value];
-		foreach ($middlewares as $middleware) {
-			if ($context->route->return_html && $middleware instanceof JsonEncode) {
-				$html_middleware = new HtmlEncode();
-				$context = $html_middleware->handle($context);
-				continue;
-			}
+		//INFO: This implemention quit the chain if a middleware sets the terminate_chain property to true.
+		// But working with global and route middlewares is quite complex and I'm not sure if this is the best way to do it.
 
+		//FIXME: The order of processing the middlewares is not correct. 
+		// If we have a custom Html() middleware and a global Json() middleware, the Json() middleware will be executed first.
+		$context = $this->process_middlewares($this->middlewares[$stage->value], $context);
+
+		if (!$context->terminate_chain && $context->route && isset($context->route->middlewares[$stage->value])) {
+			$context = $this->process_middlewares($context->route->middlewares[$stage->value], $context);
+		}
+
+		return $context;
+	}
+
+	private function process_middlewares(array $middlewares, Context $context): Context
+	{
+		foreach ($middlewares as $middleware) {
 			$context = $middleware->handle($context);
+
+			if ($middleware->terminate_chain) {
+				$context->terminate_chain = true;
+				break;
+			}
 		}
 
 		return $context;

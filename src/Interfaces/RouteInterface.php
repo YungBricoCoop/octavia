@@ -46,11 +46,6 @@ interface RouteInterface
 	public function b($params): self;
 
 	/**
-	 * Send the response as html
-	 */
-	public function html(): self;
-
-	/**
 	 * Set the callback function
 	 * @param function $func 
 	 */

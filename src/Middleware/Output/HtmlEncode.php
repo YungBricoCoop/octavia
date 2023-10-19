@@ -9,6 +9,7 @@ use ybc\octavia\Middleware\{Middleware, MiddlewareIdentifier, Context};
 class HtmlEncode extends Middleware
 {
 	public $stage = MiddlewareStages::BEFORE_OUTPUT;
+	public $terminate_chain = true;
 	public function handle(Context $ctx): Context
 	{
 		$ctx->response->data = $ctx->response->data;

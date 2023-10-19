@@ -12,7 +12,7 @@ use ybc\octavia\Router\Router;
 use ybc\octavia\Router\Route;
 use ybc\octavia\Middleware\MiddlewareHandler;
 use ybc\octavia\Middleware\Input\JsonDecode;
-use ybc\octavia\Middleware\Output\JsonEncode;
+use ybc\octavia\Middleware\Output\{JsonEncode, HtmlEncode};
 use ybc\octavia\Utils\Utils;
 use ybc\octavia\Utils\Log;
 use ybc\octavia\Utils\Session;
@@ -262,8 +262,8 @@ class RequestHandler implements RequestHandlerInterface
 		$context = $this->middleware_handler->handle(MiddlewareStages::BEFORE_ROUTING, $context);
 
 		// route the request
-		$path = $request->query_params["route"] ?? "";
-		$route = $this->router->route($request->method, $path);
+		$path = $context->request->query_params["route"] ?? "";
+		$route = $this->router->route($context->request->method, $path);
 
 		if (!$route) {
 			throw new NotFoundException();
@@ -272,9 +272,9 @@ class RequestHandler implements RequestHandlerInterface
 		Log::info("[$request->method] $route->path ($ip)");
 
 		// set the query, body and files
-		$route->query->set_data($request->query_params);
-		$route->body->set_data($request->body);
-		$route->upload->set_files($request->files);
+		$route->query->set_data($context->request->query_params);
+		$route->body->set_data($context->request->body);
+		$route->upload->set_files($context->request->files);
 
 		$context->route = $route;
 		$context = $this->middleware_handler->handle(MiddlewareStages::AFTER_ROUTING, $context);

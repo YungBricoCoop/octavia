@@ -9,6 +9,7 @@ use ybc\octavia\Middleware\{Middleware, MiddlewareIdentifier, Context};
 class JsonEncode extends Middleware
 {
 	public $stage = MiddlewareStages::BEFORE_OUTPUT;
+	public $terminate_chain = true;
 	public function handle(Context $ctx): Context
 	{
 		$ctx->response->data = json_encode(["data" => $ctx->response->data]);
