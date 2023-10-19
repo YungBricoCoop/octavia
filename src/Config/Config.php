@@ -31,7 +31,7 @@ class Config
 
 
 		foreach ($default_config as $key => $default_value) {
-			$env_value = $_ENV[$key];
+			$env_value = isset($_ENV[$key]) ? $_ENV[$key] : false;
 			if ($env_value) {
 				define($config_prefix . $key, $env_value);
 				continue;
