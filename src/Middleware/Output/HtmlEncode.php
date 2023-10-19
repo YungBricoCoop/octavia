@@ -3,8 +3,9 @@
 namespace ybc\octavia\Middleware\Output;
 
 use ybc\octavia\Enums\MiddlewareStages;
-use ybc\octavia\Middleware\{Context, Middleware};
+use ybc\octavia\Middleware\{Middleware, MiddlewareIdentifier, Context};
 
+#[MiddlewareIdentifier("html")]
 class HtmlEncode extends Middleware
 {
 	public $stage = MiddlewareStages::BEFORE_OUTPUT;

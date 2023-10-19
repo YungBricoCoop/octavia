@@ -3,8 +3,9 @@
 namespace ybc\octavia\Middleware\Output;
 
 use ybc\octavia\Enums\MiddlewareStages;
-use ybc\octavia\Middleware\{Context, Middleware};
+use ybc\octavia\Middleware\{Middleware, MiddlewareIdentifier, Context};
 
+#[MiddlewareIdentifier("cors")]
 class Cors extends Middleware
 {
 	private $origins = [];

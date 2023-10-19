@@ -7,6 +7,8 @@ use ybc\octavia\Interfaces\RouteInterface;
 use ybc\octavia\Router\RouteTypes\RouteType;
 
 use ybc\octavia\{WrongPathParameterTypeException, MissingBodyParameterException, MissingQueryParameterException, WrongQueryParameterTypeException, MissingObjectPropertyException, WrongObjectPropertyTypeException};
+use ybc\octavia\Middleware\Middleware;
+use ybc\octavia\Enums\MiddlewareStages;
 
 class Route implements RouteInterface
 {
@@ -23,6 +25,10 @@ class Route implements RouteInterface
 	public bool $requires_login;
 	public bool $requires_admin;
 	public bool $return_html;
+	private $middlewares = [
+		MiddlewareStages::AFTER_ROUTING->value => [],
+		MiddlewareStages::BEFORE_OUTPUT->value => [],
+	];
 
 	public function __construct($name, $type, $path, $path_segments, $dynamic_segments_types, $func)
 	{
@@ -88,6 +94,38 @@ class Route implements RouteInterface
 	{
 		$this->func = $func;
 		return $this;
+	}
+
+	//dynamic function to add middlewares
+	public function __call($middleware_identifier, $arguments)
+	{
+		$middleware_class = $this->find_middleware_with_identifier($middleware_identifier);
+		if (!$middleware_class) {
+			throw new \Exception("Middleware with identifier {$middleware_identifier} not found");
+		}
+		$middleware = new $middleware_class(...$arguments);
+		if ($middleware->stage->value == MiddlewareStages::BEFORE_ROUTING->value) {
+			throw new \Exception("Middleware with identifier {$middleware_identifier} cannot be added to a route");
+		}
+		$this->add_middleware($middleware);
+		return $this;
+	}
+
+	private function add_middleware(Middleware $middleware)
+	{
+		$this->middlewares[$middleware->stage->value][] = $middleware;
+	}
+
+	private function find_middleware_with_identifier($middleware_identifier)
+	{
+		foreach (get_declared_classes() as $class) {
+			$refClass = new \ReflectionClass($class);
+			$attributes = $refClass->getAttributes(MiddlewareIdentifier::class);
+			if ($attributes && $attributes[0]->newInstance()->identifier === $middleware_identifier) {
+				return $class;
+			}
+		}
+		return null;
 	}
 
 	public function handle()

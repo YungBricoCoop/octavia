@@ -2,8 +2,9 @@
 
 namespace ybc\octavia\Middleware\Input;
 
-use ybc\octavia\Middleware\{Context, Middleware};
+use ybc\octavia\Middleware\{Middleware, MiddlewareIdentifier, Context};
 
+#[MiddlewareIdentifier("json_decode")]
 class JsonDecode extends Middleware
 {
 	public function handle(Context $ctx): Context
