@@ -2,14 +2,19 @@
 
 namespace ybc\octavia\Router;
 
-use ybc\octavia\Router\RouteTypes\RouteType;
 use ybc\octavia\Utils\Utils;
 
 class Router
 {
-	/** @var Route[] */
-	private $routes = [];
-	private $prefix = "";
+	/** @var RouteGroup[] */
+	private $route_groups;
+	private $prefix;
+
+	public function __construct()
+	{
+		$this->route_groups = [];
+		$this->prefix = "";
+	}
 
 	/**
 	 * Get the route that matches the given path
@@ -20,38 +25,46 @@ class Router
 	 */
 	public function route(string $http_method, string $route_path)
 	{
-		// match routes by number of segments
-		$segments = Utils::get_route_path_segments($route_path);
-		/** * @var Route[] */
-		$matched = [];
-		foreach ($this->routes as $route) {
-			if (count($segments) == count($route->path_segments)) {
-				$matched[] = $route;
+		$best_match_length = 0;
+		$best_match_routes = [];
+
+		// find the route group with the longest matching prefix
+		foreach ($this->route_groups as $route_group) {
+			$prefix_length = strlen($route_group->prefix);
+			if (substr($route_path, 0, $prefix_length) == $route_group->prefix && $prefix_length > $best_match_length) {
+				$best_match_routes = $route_group->routes;
+				$best_match_length = $prefix_length;
 			}
 		}
+		$sub_route_path = substr($route_path, $best_match_length);
+		$segments = Utils::get_route_path_segments($sub_route_path);
+		$num_segments = count($segments);
 
-		// if no route matches, return null
-		if (empty($matched)) return null;
+		foreach ($best_match_routes as $route) {
+			if ($num_segments != count($route->path_segments)) {
+				continue;
+			}
 
-		// match the route based on the order of the segements and their name
-		foreach ($matched as $route) {
 			$route_segments = $route->path_segments;
 			$route_dynamic_segments_values = [];
 			$route_matched = true;
+
 			foreach ($segments as $index => $segment) {
-				// if the segment is a variable, it matches
 				if (substr($route_segments[$index], 0, 1) == "{") {
 					$route_dynamic_segments_values[] = $segment;
 					continue;
 				}
 
-				// if the segment is not a variable, it must match the segment
-				if ($segment == $route_segments[$index]) continue;
-				$route_matched = false;
-				break;
+				if ($segment != $route_segments[$index]) {
+					$route_matched = false;
+					break;
+				}
 			}
+
+			// if the route doesn't match or the http method doesn't match, continue
 			if (!$route_matched) continue;
 			if ($route->type::$http_method != $http_method) continue;
+
 			$route->dynamic_segments_values = $route_dynamic_segments_values;
 			return $route;
 		}
@@ -61,33 +74,23 @@ class Router
 	}
 
 	/**
-	 * Register a new route
-	 * @param string $prefix The prefix of the route
-	 * @param string $name The name of the route
-	 * @param RouteType $type The type of the route
-	 * @param string $path The path of the route
-	 * @param callable $callback The callback of the route
-	 * @throws \InvalidArgumentException
-	 * @example $router->register("", "home", "GET", "/", false, function() { echo "Home page"; });
-	 * @return Route
+	 * Register a new route group
+	 * @param string $prefix The prefix of the group
+	 * @return RouteGroup
 	 */
-	public function register(string $prefix, string $name, RouteType $type, string $path, callable $callback)
+	public function group(string $prefix)
 	{
-		// add the prefix to the path if it exists
-		if ($prefix) {
-			$path = $prefix . $path;
+		if (substr($prefix, -1) == "/") {
+			$prefix = substr($prefix, 0, -1);
 		}
-		$path = $this->prefix . $path;
 
-		$path_segments = Utils::get_route_path_segments($path);
-		$dynamic_path_segments_types = Utils::get_route_dynamic_path_segments_types($path_segments);
-		$route = new Route($name, $type, $path, $path_segments, $dynamic_path_segments_types, $callback);
-		$key = $type::$http_method . $path;
-		if (array_key_exists($key, $this->routes)) {
-			throw new \InvalidArgumentException("ENDPOINT_ALREADY_REGISTERED");
+		if (array_key_exists($prefix, $this->route_groups)) {
+			throw new \InvalidArgumentException("GROUP_ALREADY_REGISTERED");
 		}
-		$this->routes[$key] = $route;
-		return $route;
+
+		$route_group = new RouteGroup($prefix);
+		$this->route_groups[$prefix] = $route_group;
+		return $route_group;
 	}
 
 	/**

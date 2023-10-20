@@ -12,11 +12,11 @@ use ybc\octavia\Router\Router;
 use ybc\octavia\Router\Route;
 use ybc\octavia\Middleware\MiddlewareHandler;
 use ybc\octavia\Middleware\Input\JsonDecode;
-use ybc\octavia\Middleware\Output\{JsonEncode, HtmlEncode};
+use ybc\octavia\Middleware\Output\{JsonEncode};
+use ybc\octavia\Router\RouteGroup;
 use ybc\octavia\Utils\Utils;
 use ybc\octavia\Utils\Log;
 use ybc\octavia\Utils\Session;
-use ybc\octavia\Router\RouteTypes;
 use ybc\octavia\Router\RouteTypes\RouteType;
 
 class RequestHandler implements RequestHandlerInterface
@@ -48,80 +48,13 @@ class RequestHandler implements RequestHandlerInterface
 	}
 
 	/**
-	 * Register a GET route
-	 * @param string $path The path of the route
-	 * @param callable $callback Callback function
-	 * @return Route
+	 * Create a new group of routes
+	 * @param string $prefix The prefix of the group
+	 * @return RouteGroup
 	 */
-	public function get(string $path, callable $func): Route
+	public function group(?string $prefix = "/"): RouteGroup
 	{
-		return $this->register_route(new RouteTypes\Get(), $path, $func);
-	}
-
-	/**
-	 * Register a POST route
-	 * @param string $path The path of the route
-	 * @param callable $callback Callback function
-	 * @return Route
-	 */
-	public function post(string $path, callable $func): Route
-	{
-		return $this->register_route(new RouteTypes\Post(), $path, $func);
-	}
-
-	/**
-	 * Register a PUT route
-	 * @param string $path The path of the route
-	 * @param callable $callback Callback function
-	 * @return Route
-	 */
-	public function put(string $path, callable $func): Route
-	{
-		return $this->register_route(new RouteTypes\Put(), $path, $func);
-	}
-
-	/**
-	 * Register a DELETE route
-	 * @param string $path The path of the route
-	 * @param callable $callback Callback function
-	 * @return Route
-	 */
-	public function delete(string $path, callable $func): Route
-	{
-		return $this->register_route(new RouteTypes\Delete(), $path, $func);
-	}
-
-	/**
-	 * Register a PATCH route
-	 * @param string $path The path of the route
-	 * @param callable $callback Callback function
-	 * @return Route
-	 */
-	public function patch(string $path, callable $func): Route
-	{
-		return $this->register_route(new RouteTypes\Patch(), $path, $func);
-	}
-
-	/**
-	 * Register a OPTIONS route
-	 * @param string $path The path of the route
-	 * @param callable $callback Callback function
-	 * @return Route
-	 */
-	public function options(string $path, callable $func): Route
-	{
-		return $this->register_route(new RouteTypes\Options(), $path, $func);
-	}
-
-	/**
-	 * Register a HEAD route
-	 * @param string $path The path of the route
-	 * @param callable $callback Callback function
-	 * @return Route
-	 */
-	public function head(string $path, callable $func): Route
-	{
-		return $this->register_route(new RouteTypes\Head(), $path, $func);
+		return $this->router->group($prefix);
 	}
 
 	/**
@@ -134,7 +67,7 @@ class RequestHandler implements RequestHandlerInterface
 	 * @example $router->upload("/upload", function($query, $body, $session, $files) { echo "Upload page"; }, true, ["jpg", "png"], "10MB");
 	 * @return Route
 	 */
-	public function upload(string $path, callable $func, bool $allow_multiple_files = OCTAVIA_UPLOAD_ALLOW_MULTIPLE_FILES, array $allowed_extensions = [], string $max_size = OCTAVIA_UPLOAD_MAX_SIZE): Route
+	/* 	public function upload(string $path, callable $func, bool $allow_multiple_files = OCTAVIA_UPLOAD_ALLOW_MULTIPLE_FILES, array $allowed_extensions = [], string $max_size = OCTAVIA_UPLOAD_MAX_SIZE): Route
 	{
 		// register the route
 		$name = Utils::get_route_name($path);
@@ -150,7 +83,7 @@ class RequestHandler implements RequestHandlerInterface
 		}
 
 		return $route;
-	}
+	} */
 
 	/**
 	 * Handle health check
@@ -160,7 +93,7 @@ class RequestHandler implements RequestHandlerInterface
 	 * @example $router->health("/health", function($query, $body, $session) { return Health::HEALTHY; });
 	 * @return Route
 	 */
-	public function health(string $path, callable $func, bool $auth_required = false): Route
+	/* 	public function health(string $path, callable $func, bool $auth_required = false): Route
 	{
 		// register the route
 		$name = Utils::get_route_name($path);
@@ -176,7 +109,7 @@ class RequestHandler implements RequestHandlerInterface
 
 		return $route;
 	}
-
+ */
 	/**
 	 * Handle google oauth
 	 * @param string $path The path of the route
@@ -184,7 +117,7 @@ class RequestHandler implements RequestHandlerInterface
 	 * @example $router->google_oauth("/google", function($status, $query, $body, $session) { $google_oauth_handler = new GoogleOAuthHandler(); });
 	 * @return Route
 	 */
-	public function google_oauth(string $path, callable $func): Route
+	/* 	public function google_oauth(string $path, callable $func): Route
 	{
 		// register the route
 		$name = Utils::get_route_name($path);
@@ -199,7 +132,7 @@ class RequestHandler implements RequestHandlerInterface
 		}
 
 		return $route;
-	}
+	} */
 
 	/**
 	 * Register a new route
@@ -207,7 +140,7 @@ class RequestHandler implements RequestHandlerInterface
 	 * @param string $path The path of the route
 	 * @return Route
 	 */
-	private function register_route(RouteType $method, string $path, callable $func): Route
+	/* 	private function register_route(RouteType $method, string $path, callable $func): Route
 	{
 		// register the route
 		$name = Utils::get_route_name($path);
@@ -222,7 +155,7 @@ class RequestHandler implements RequestHandlerInterface
 		}
 
 		return $route;
-	}
+	} */
 
 	/**
 	 * Handle the request
@@ -334,7 +267,8 @@ class RequestHandler implements RequestHandlerInterface
 
 		try {
 			//INFO: Apply the middlewares to the response, this might cause problems if the middlewares create exceptions
-			$this->response = $this->middleware_handler->handle_after($this->response);
+			//TODO: Handle middlewares
+			//$this->response = $this->middleware_handler->handle_after($this->response);
 			$this->response->send();
 		} catch (\Exception $e) {
 			// if the middlewares create exceptions, default the response to json with code 500
