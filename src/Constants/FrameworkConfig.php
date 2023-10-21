@@ -10,6 +10,9 @@ class FrameworkConfig
 			// CONFIG
 			"CONFIG_PREFIX" => "OCTAVIA_",
 			"CONFIG_ENV_FILE" => ".env",
+
+			// PATHS
+			"BASE_PATH" => $_SERVER['SCRIPT_FILENAME'],
 			
 			// UPLOAD
 			"UPLOAD_DIR" => "uploads",
