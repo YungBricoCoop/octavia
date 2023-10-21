@@ -25,7 +25,6 @@ class RequestHandler implements RequestHandlerInterface
 	private Router $router;
 	private Session $session;
 	private ?Response $response = null;
-	private $base_path = "";
 
 	public MiddlewareHandler $middleware_handler;
 
@@ -44,7 +43,6 @@ class RequestHandler implements RequestHandlerInterface
 		]);
 		$this->session = Session::get_instance();
 		$this->response = new Response();
-		$this->base_path = Utils::get_path_from_backtrace(1);
 	}
 
 	/**
@@ -56,6 +54,29 @@ class RequestHandler implements RequestHandlerInterface
 	{
 		return $this->router->group($prefix);
 	}
+
+	/**
+	 * Include a group of routes from a file
+	 * @param string $path The path of the file
+	 * @param string $prefix The prefix of the group
+	 * @return RouteGroup
+	 */
+	public function include_group($path, $prefix = "")
+	{
+		global $handler;
+		$group = $handler->group($prefix);
+
+		$group_func = require_once($path);
+
+		if (!is_callable($group_func)) {
+			throw new \InvalidArgumentException("GROUP_FUNCTION_NOT_CALLABLE");
+		}
+
+		$group_func($group);
+
+		return $group;
+	}
+
 
 	/**
 	 * Handle file(s) upload

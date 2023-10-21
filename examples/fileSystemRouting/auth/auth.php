@@ -1,6 +1,6 @@
 <?php
 
-$group = $handler->group("/auth");
+$group = $handler->group();
 
 $group->get("/login", function ($q, $b) {
 	return "Hi, this is the login page";

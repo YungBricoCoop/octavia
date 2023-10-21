@@ -15,13 +15,13 @@ $handler = new RequestHandler();
 $group = $handler->group("/api/v1");
 
 // Require the other routes, keep this after the handler initialization and prefix setting
-require "./auth/auth.php";
+//require "./auth/auth.php";
+
+
+$handler->include_group("./auth/test.php", "/api/v1/auth");
 
 $group->get("/", function ($q, $b) {
 	return "Hello World";
 });
-
-
-
 
 $handler->handle_request();
