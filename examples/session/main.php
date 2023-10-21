@@ -12,18 +12,18 @@ use ybc\octavia\RequestHandler;
  */
 
 $handler = new RequestHandler();
-$handler->set_prefix("/api/v1");
+$group = $handler->group("/api/v1");
 
-$handler->get("/", function ($q, $b, $s) {
+$group->get("/", function ($q, $b, $s) {
 	$user = $s->get("user") ?? "Guest";
 	return "Hello " . $user;
 });
 
-$handler->get("/login/{user}", function ($user, $q, $b, $s) {
+$group->get("/login/{user}", function ($user, $q, $b, $s) {
 	$s->set("user", $user);
 });
 
-$handler->get("/logout", function ($q, $b, $s) {
+$group->get("/logout", function ($q, $b, $s) {
 	$s->destroy();
 	// or
 	// $s->remove("user");

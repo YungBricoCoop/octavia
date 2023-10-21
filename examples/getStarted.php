@@ -28,21 +28,21 @@ class LoginUser
 
 $handler = new RequestHandler();
 
-$handler->set_prefix("/api/v1");
+$group = $handler->group("/api/v1");
 
-$handler->get("/hello/{name}", function ($name, $q, $b) {
+$group->get("/hello/{name}", function ($name, $q, $b) {
 	return "Hello $name";
 });
 
-$handler->get("/hello/{name}/html", function ($name, $q, $b) {
+$group->get("/hello/{name}/html", function ($name, $q, $b) {
 	return "<html><body><h1>Hello $name</h1></body></html>";
 })->html();
 
-$handler->post("/register", function ($q, $b) {
+$group->post("/register", function ($q, $b) {
 	return "User $b->username registered successfully, using $q->language language";
 })->query(["language"])->body(RegisterUser::class);
 
-$handler->post("/login", function ($q, $b) {
+$group->post("/login", function ($q, $b) {
 	if ($b->username == "admin" && $b->password == "admin") {
 		return "Login Successful";
 	}

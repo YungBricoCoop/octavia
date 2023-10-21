@@ -13,9 +13,9 @@ $handler = new RequestHandler(); // load config from .env file
 // $handler = new RequestHandler(".env"); // load config from custom .env file
 // $handler = new RequestHandler(["LOG_FILE" => "mylog.log"]);  // load config from array
 
-$handler->set_prefix("/api/v1");
+$group = $handler->group("/api/v1");
 
-$handler->get("/", function ($q, $b, $s) {
+$group->get("/", function ($q, $b, $s) {
 	return "Hey !";
 });
 

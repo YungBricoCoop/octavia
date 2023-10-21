@@ -11,9 +11,9 @@ use ybc\octavia\Utils\GoogleOAuthHandler;
  */
 
 $handler = new RequestHandler();
-$handler->set_prefix("/api/oauth/");
+$group = $handler->group("/api/oauth");
 
-$handler->google_oauth("/google", function ($status, $q, $b, $s) {
+$group->google_oauth("/google", function ($status, $q, $b, $s) {
 	$google_oauth_handler = new GoogleOAuthHandler();
 
 	$data = $google_oauth_handler->get_data();

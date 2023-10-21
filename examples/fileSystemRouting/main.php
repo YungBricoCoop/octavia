@@ -12,12 +12,12 @@ use ybc\octavia\RequestHandler;
  */
 
 $handler = new RequestHandler();
-$handler->set_prefix("/api/v1");
+$group = $handler->group("/api/v1");
 
 // Require the other routes, keep this after the handler initialization and prefix setting
 require "./auth/auth.php";
 
-$handler->get("/", function ($q, $b) {
+$group->get("/", function ($q, $b) {
 	return "Hello World";
 });
 
