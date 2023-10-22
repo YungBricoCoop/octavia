@@ -12,7 +12,9 @@ use ybc\octavia\RequestHandler;
  */
 
 $handler = new RequestHandler();
-$group = $handler->group("/api/v1");
+$handler->prefix("/api/v1");
+
+$group = $handler->group();
 
 $group->get("/", function ($q, $b, $s) {
 	$user = $s->get("user") ?? "Guest";

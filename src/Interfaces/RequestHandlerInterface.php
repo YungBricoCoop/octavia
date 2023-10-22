@@ -15,6 +15,7 @@ interface RequestHandlerInterface
 	public function head(string $path, callable $callback): Route;
 	public function upload(string $path, callable $callback, bool $allow_multiple_files = true, array $allowed_extensions = [], string $max_size = "10MB") : Route;
 	public function health(string $path, callable $callback, bool $auth_required = false): Route; */
-	public function group(string $prefix): RouteGroup;
+	public function prefix(string $prefix);
+	public function group(): RouteGroup;
 	public function handle_request();
 }

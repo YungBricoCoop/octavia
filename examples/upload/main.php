@@ -12,17 +12,19 @@ use ybc\octavia\RequestHandler;
  */
 
 $handler = new RequestHandler();
-$handler->set_prefix("/api/v1");
+$handler->prefix("/api/v1");
 
-$handler->upload("/{user}/profile-picture", function ($user, $q, $b, $s, $files) {
+$group = $handler->group();
+
+$group->upload("/{user}/profile-picture", function ($user, $q, $b, $s, $files) {
 	return $files;
 }, false, ["png", "jpg"], "2MB");
 
-$handler->upload("/{user}/cv", function ($user, $q, $b, $s, $files) {
+$group->upload("/{user}/cv", function ($user, $q, $b, $s, $files) {
 	return $files;
 }, false, ["pdf"], "200KB");
 
-$handler->upload("/{user}/certificates", function ($user, $q, $b, $s, $files) {
+$group->upload("/{user}/certificates", function ($user, $q, $b, $s, $files) {
 	return $files;
 }, true, ["pdf"], "400KB");
 

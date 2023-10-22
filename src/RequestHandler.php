@@ -47,12 +47,11 @@ class RequestHandler implements RequestHandlerInterface
 
 	/**
 	 * Create a new group of routes
-	 * @param string $prefix The prefix of the group
 	 * @return RouteGroup
 	 */
-	public function group(?string $prefix = "/"): RouteGroup
+	public function group(): RouteGroup
 	{
-		return $this->router->group($prefix);
+		return $this->router->group("/");
 	}
 
 	/**
@@ -63,8 +62,7 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function include_group($path, $prefix = "")
 	{
-		global $handler;
-		$group = $handler->group($prefix);
+		$group = $this->router->group($prefix);
 
 		$group_func = require_once($path);
 
@@ -304,7 +302,7 @@ class RequestHandler implements RequestHandlerInterface
 	 * Set the prefix for all routes
 	 * @param string $prefix
 	 */
-	public function set_prefix(string $prefix)
+	public function prefix(string $prefix)
 	{
 		$this->router->set_prefix($prefix);
 	}

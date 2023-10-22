@@ -1,11 +1,13 @@
 <?php
 
-$group = $handler->group();
+use ybc\octavia\Router\RouteGroup;
 
-$group->get("/login", function ($q, $b) {
-	return "Hi, this is the login page";
-});
+return function (RouteGroup $group) {
+	$group->get("/login", function ($q, $b) {
+		return "Hi, this is the login page";
+	});
 
-$group->get("/register", function ($q, $b) {
-	return "Hi, this is the register page";
-});
+	$group->get("/register", function ($q, $b) {
+		return "Hi, this is the register page";
+	});
+};

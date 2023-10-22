@@ -27,8 +27,9 @@ class LoginUser
 }
 
 $handler = new RequestHandler();
+$handler->prefix("/api/v1");
 
-$group = $handler->group("/api/v1");
+$group = $handler->group();
 
 $group->get("/hello/{name}", function ($name, $q, $b) {
 	return "Hello $name";

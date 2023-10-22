@@ -12,7 +12,9 @@ use ybc\octavia\Enums\Health;
  */
 
 $handler = new RequestHandler();
-$group = $handler->group("/api/v1");
+$handler->prefix("/api/v1");
+
+$group = $handler->group();
 
 
 $group->health("/health", function ($q, $b, $s) {

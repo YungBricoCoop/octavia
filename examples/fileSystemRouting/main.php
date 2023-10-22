@@ -10,15 +10,16 @@ use ybc\octavia\RequestHandler;
  * GET /api/v1/auth/login
  * GET /api/v1/auth/register
  */
-
 $handler = new RequestHandler();
-$group = $handler->group("/api/v1");
+$handler->prefix("/api/v1");
+
+$group = $handler->group();
 
 // Require the other routes, keep this after the handler initialization and prefix setting
 //require "./auth/auth.php";
 
 
-$handler->include_group("./auth/test.php", "/api/v1/auth");
+$handler->include_group("./auth/auth.php", "/auth");
 
 $group->get("/", function ($q, $b) {
 	return "Hello World";

@@ -25,17 +25,24 @@ class Router
 	 */
 	public function route(string $http_method, string $route_path)
 	{
-		$best_match_length = 0;
+		// if the route doesn't start with the prefix, return null
+		if (substr($route_path, 0, strlen($this->prefix)) != $this->prefix) return null;
+
+		$route_path = substr($route_path, strlen($this->prefix));
+
+		$best_match_length = -1;
 		$best_match_routes = [];
 
+
 		// find the route group with the longest matching prefix
-		foreach ($this->route_groups as $route_group) {
-			$prefix_length = strlen($route_group->prefix);
-			if (substr($route_path, 0, $prefix_length) == $route_group->prefix && $prefix_length > $best_match_length) {
-				$best_match_routes = $route_group->routes;
-				$best_match_length = $prefix_length;
-			}
-		}
+        foreach ($this->route_groups as $route_group) {
+            $prefix_length = strlen($route_group->prefix);
+            if (substr($route_path, 0, $prefix_length) == $route_group->prefix && $prefix_length > $best_match_length) {
+                $best_match_routes = $route_group->routes;
+                $best_match_length = $prefix_length;
+            }
+        }
+
 		$sub_route_path = substr($route_path, $best_match_length);
 		$segments = Utils::get_route_path_segments($sub_route_path);
 		$num_segments = count($segments);
@@ -60,6 +67,7 @@ class Router
 					break;
 				}
 			}
+
 
 			// if the route doesn't match or the http method doesn't match, continue
 			if (!$route_matched) continue;
@@ -89,7 +97,7 @@ class Router
 		}
 
 		$route_group = new RouteGroup($prefix);
-		$this->route_groups[$prefix] = $route_group;
+		$this->route_groups[$this->prefix.$prefix] = $route_group;
 		return $route_group;
 	}
 
