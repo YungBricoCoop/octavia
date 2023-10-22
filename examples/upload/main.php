@@ -18,14 +18,14 @@ $group = $handler->group();
 
 $group->upload("/{user}/profile-picture", function ($user, $q, $b, $s, $files) {
 	return $files;
-}, false, ["png", "jpg"], "2MB");
+}, "./user", false, ["png", "jpg"], "2MB");
 
 $group->upload("/{user}/cv", function ($user, $q, $b, $s, $files) {
 	return $files;
-}, false, ["pdf"], "200KB");
+}, "./user", false, ["pdf"], "200KB");
 
 $group->upload("/{user}/certificates", function ($user, $q, $b, $s, $files) {
 	return $files;
-}, true, ["pdf"], "400KB");
+}, "./certificates", true, ["pdf"], "400KB");
 
 $handler->handle_request();

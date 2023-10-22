@@ -24,6 +24,6 @@ $group->health("/health", function ($q, $b, $s) {
 		"db" => $db ? Health::HEALTHY : Health::CRITICAL,
 		"redis" => $redis ? Health::HEALTHY : Health::CRITICAL
 	];
-});
+},false);
 
 $handler->handle_request();
