@@ -2,27 +2,29 @@
 
 namespace ybc\octavia\Middleware;
 
-use ybc\octavia\Middleware\Output\{JsonEncode, HtmlEncode};
 use ybc\octavia\Enums\MiddlewareStages;
-use ybc\octavia\Router\Route;
+use ybc\octavia\Utils\Utils;
 
 class MiddlewareHandler
 {
-	private $middlewares = [
-		MiddlewareStages::BEFORE_ROUTING->value => [],
-		MiddlewareStages::AFTER_ROUTING->value => [],
-		MiddlewareStages::BEFORE_OUTPUT->value => [],
-	];
+	private $middlewares = [];
 
 	/**
-	 * Add a middleware to the stack.
+	 * Add one or multiple middlewares to the stack.
 	 * The stack will be executed in the order the middlewares were added.
-	 * @param Middleware $middleware
+	 * @param Middleware|Middleware[] $middleware
 	 * @return $this
 	 */
-	public function add(Middleware $middleware)
+	public function add($middleware)
 	{
-		$this->middlewares[$middleware->stage->value][] = $middleware;
+		if (!is_array($middleware)) {
+			$this->middlewares[$middleware->stage->value][] = $middleware;
+			return $this;
+		}
+
+		foreach ($middleware as $m) {
+			$this->middlewares[$m->stage->value][] = $m;
+		}
 		return $this;
 	}
 
@@ -38,48 +40,37 @@ class MiddlewareHandler
 	}
 
 	/**
-	 * Add multiple middlewares to the stack.
-	 * The stack will be executed in the order the middlewares were added.
-	 * @param array $middlewares
-	 * @return $this
-	 */
-	public function add_many(array $middlewares)
-	{
-		foreach ($middlewares as $middleware) {
-			$this->add($middleware);
-		}
-		return $this;
-	}
-
-	/**
 	 * Handle the request through the middleware stack.
 	 * @param MiddlewareStages $stage, the stage of the middleware stack to handle
 	 * @param Context $context
+	 * @param Middleware[] $group_middlewares
+	 * @param Middleware[] $excluded_global_middlewares
+	 * @param Middleware[] $route_middlewares
+	 * @param Middleware[] $excluded_group_route_middlewares
 	 * @return Context
 	 */
-	public function handle(MiddlewareStages $stage, Context $context)
+	public function handle(MiddlewareStages $stage, Context $context, $group_middlewares = [], $excluded_global_middlewares = [], $route_middlewares = [], $excluded_group_route_middlewares = [])
 	{
-		//INFO: This implemention quit the chain if a middleware sets the terminate_chain property to true.
-		// But working with global and route middlewares is quite complex and I'm not sure if this is the best way to do it.
+		$global_stage_middlewares = $this->middlewares[$stage->value] ?? [];
+		$group_stage_middlewares = $group_middlewares[$stage->value] ?? [];
+		$route_stage_middlewares = $route_middlewares[$stage->value] ?? [];
 
-		//FIXME: The order of processing the middlewares is not correct. 
-		// If we have a custom Html() middleware and a global Json() middleware, the Json() middleware will be executed first.
-		$context = $this->process_middlewares($this->middlewares[$stage->value], $context);
+		$combined_global_exclusions = array_merge($excluded_global_middlewares, $excluded_group_route_middlewares);
 
-		if (!$context->terminate_chain && $context->route && isset($context->route->middlewares[$stage->value])) {
-			$context = $this->process_middlewares($context->route->middlewares[$stage->value], $context);
-		}
+		$global_stage_middlewares = Utils::exclude_middlewares($global_stage_middlewares, $combined_global_exclusions);
+		$group_stage_middlewares = Utils::exclude_middlewares($group_stage_middlewares, $excluded_group_route_middlewares);
+		$route_stage_middlewares = Utils::exclude_middlewares($route_stage_middlewares, $excluded_group_route_middlewares);
+	
+		$middleware_stack = array_merge($global_stage_middlewares, $group_stage_middlewares, $route_stage_middlewares);
 
-		return $context;
-	}
+		foreach ($middleware_stack as $middleware) {
+			if (!($middleware instanceof Middleware)) {
+				continue;
+			}
 
-	private function process_middlewares(array $middlewares, Context $context): Context
-	{
-		foreach ($middlewares as $middleware) {
 			$context = $middleware->handle($context);
 
 			if ($middleware->terminate_chain) {
-				$context->terminate_chain = true;
 				break;
 			}
 		}

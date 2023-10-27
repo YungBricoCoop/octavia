@@ -17,11 +17,11 @@ class Router
 	}
 
 	/**
-	 * Get the route that matches the given path
+	 * Get the route and its group that matches the given path
 	 * Routes defined order is important
 	 * @param string $http_method The http method
 	 * @param string $route_path The path of the route
-	 * @return Route|null
+	 * @return array|null An array containing the Group and Route if found, otherwise null
 	 */
 	public function route(string $http_method, string $route_path)
 	{
@@ -32,16 +32,17 @@ class Router
 
 		$best_match_length = -1;
 		$best_match_routes = [];
-
+		$best_match_group = null;
 
 		// find the route group with the longest matching prefix
-        foreach ($this->route_groups as $route_group) {
-            $prefix_length = strlen($route_group->prefix);
-            if (substr($route_path, 0, $prefix_length) == $route_group->prefix && $prefix_length > $best_match_length) {
-                $best_match_routes = $route_group->routes;
-                $best_match_length = $prefix_length;
-            }
-        }
+		foreach ($this->route_groups as $route_group) {
+			$prefix_length = strlen($route_group->prefix);
+			if (substr($route_path, 0, $prefix_length) == $route_group->prefix && $prefix_length > $best_match_length) {
+				$best_match_routes = $route_group->routes;
+				$best_match_group = $route_group;
+				$best_match_length = $prefix_length;
+			}
+		}
 
 		$sub_route_path = substr($route_path, $best_match_length);
 		$segments = Utils::get_route_path_segments($sub_route_path);
@@ -68,13 +69,12 @@ class Router
 				}
 			}
 
-
 			// if the route doesn't match or the http method doesn't match, continue
 			if (!$route_matched) continue;
 			if ($route->type::$http_method != $http_method) continue;
 
 			$route->dynamic_segments_values = $route_dynamic_segments_values;
-			return $route;
+			return ['group' => $best_match_group, 'route' => $route];
 		}
 
 		// if no route matches, return null
@@ -97,7 +97,7 @@ class Router
 		}
 
 		$route_group = new RouteGroup($prefix);
-		$this->route_groups[$this->prefix.$prefix] = $route_group;
+		$this->route_groups[$this->prefix . $prefix] = $route_group;
 		return $route_group;
 	}
 

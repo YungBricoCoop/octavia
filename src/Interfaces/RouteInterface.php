@@ -50,4 +50,18 @@ interface RouteInterface
 	 * @param function $func 
 	 */
 	public function f($func): self;
+
+	/**
+	 * Register one or multiple middlewares
+	 * @param Middleware|Middleware[] $middleware
+	 * @return RouteInterface
+	 */
+	public function add($middleware): self;
+
+	/**
+	 * Register one or multiple middlewares that should not be applied to this route
+	 * @param Middleware|Middleware[] $middleware
+	 * @return RouteInterface
+	 */
+	public function no($middleware): self;
 }

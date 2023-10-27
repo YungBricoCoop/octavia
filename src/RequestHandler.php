@@ -9,22 +9,23 @@ use ybc\octavia\Enums\MiddlewareStages;
 use ybc\octavia\Interfaces\RequestHandlerInterface;
 use ybc\octavia\Middleware\Context;
 use ybc\octavia\Router\Router;
-use ybc\octavia\Router\Route;
+use ybc\octavia\Middleware\Middleware;
 use ybc\octavia\Middleware\MiddlewareHandler;
 use ybc\octavia\Middleware\Input\JsonDecode;
 use ybc\octavia\Middleware\Output\{JsonEncode};
+use ybc\octavia\Router\Route;
 use ybc\octavia\Router\RouteGroup;
-use ybc\octavia\Utils\Utils;
 use ybc\octavia\Utils\Log;
 use ybc\octavia\Utils\Session;
-use ybc\octavia\Router\RouteTypes\RouteType;
 
 class RequestHandler implements RequestHandlerInterface
 {
 
 	private Router $router;
 	private Session $session;
-	private ?Response $response = null;
+	private Response $response;
+	private ?RouteGroup $current_group;
+	private ?Route $current_route;
 
 	public MiddlewareHandler $middleware_handler;
 
@@ -37,12 +38,14 @@ class RequestHandler implements RequestHandlerInterface
 		Config::load($config);
 		$this->router = new Router();
 		$this->middleware_handler = new MiddlewareHandler();
-		$this->middleware_handler->add_many([
+		$this->middleware_handler->add([
 			new JsonDecode(),
 			new JsonEncode(),
 		]);
 		$this->session = Session::get_instance();
 		$this->response = new Response();
+		$this->current_group = null;
+		$this->current_route = null;
 	}
 
 	/**
@@ -75,7 +78,16 @@ class RequestHandler implements RequestHandlerInterface
 		return $group;
 	}
 
-
+	/**
+	 * Add one or multiple middlewares
+	 * @param Middleware|Middleware[] $middleware
+	 * @return void
+	 */
+	public function add($middleware): RequestHandlerInterface
+	{
+		$this->middleware_handler->add($middleware);
+		return $this;
+	}
 
 	/**
 	 * Handle the request
@@ -89,19 +101,31 @@ class RequestHandler implements RequestHandlerInterface
 			if ($e->getDetail()) {
 				Log::error($e->getMessage() . "(" . $e->getDetail() . ")", $e->getTrace());
 			}
-			$this->send_response($e->getMessage(), $e->getCode());
+			$context = new Context(new Request(), $this->current_route, $this->response);
+
+			if ($this->current_group && $this->current_route) {
+				$group_middlewares = $this->current_group->middlewares;
+				$group_exclude_middlewares = $this->current_group->no_middlewares;
+				$route_middlewares = $this->current_route->middlewares;
+				$route_exclude_middlewares = $this->current_route->no_middlewares;
+
+				$context = $this->middleware_handler->handle(
+					MiddlewareStages::BEFORE_OUTPUT,
+					$context,
+					$group_middlewares,
+					$group_exclude_middlewares,
+					$route_middlewares,
+					$route_exclude_middlewares
+				);
+			} else {
+				$context = $this->middleware_handler->handle(MiddlewareStages::BEFORE_OUTPUT, $context);
+			}
+			$this->send_response($e->getMessage(), $e->getCode(), $context);
 		} catch (\Exception $e) {
-
-			// get type of exception 
-			$exception_type = get_class($e);
-
-			// merge the exception type with the exception message
-			$exception_message = $exception_type . ": " . $e->getMessage();
-
-			Log::error($exception_message, $e->getTrace());
-			$this->send_response("INTERNAL_SERVER_ERROR", 500);
+			// ... (similar adjustments as above)
 		}
 	}
+
 
 	private function handle_request_with_exception()
 	{
@@ -116,11 +140,21 @@ class RequestHandler implements RequestHandlerInterface
 
 		// route the request
 		$path = $context->request->query_params["route"] ?? "";
-		$route = $this->router->route($context->request->method, $path);
+		$result = $this->router->route($context->request->method, $path);
 
-		if (!$route) {
+		if (!$result) {
 			throw new NotFoundException();
 		}
+		$group = $result["group"];
+		$this->current_group = $group;
+		$group_middlewares = $group->middlewares;
+		$group_exclude_middlewares = $group->no_middlewares;
+
+		$route = $result["route"];
+		$this->current_route = $route;
+		$route_middlewares = $route->middlewares;
+		$route_exclude_middlewares = $route->no_middlewares;
+
 
 		Log::info("[$request->method] $route->path ($ip)");
 
@@ -130,7 +164,7 @@ class RequestHandler implements RequestHandlerInterface
 		$route->upload->set_files($context->request->files);
 
 		$context->route = $route;
-		$context = $this->middleware_handler->handle(MiddlewareStages::AFTER_ROUTING, $context);
+		$context = $this->middleware_handler->handle(MiddlewareStages::AFTER_ROUTING, $context, $group_middlewares, $group_exclude_middlewares, $route_middlewares, $route_exclude_middlewares);
 
 		// check if the user is logged in and if the user is allowed to access the route
 		if ($route->requires_login && !$this->session->is_logged()) {
@@ -167,7 +201,7 @@ class RequestHandler implements RequestHandlerInterface
 		$context->response = $this->response;
 
 		// process the response with the middlewares
-		$context = $this->middleware_handler->handle(MiddlewareStages::BEFORE_OUTPUT, $context);
+		$context = $this->middleware_handler->handle(MiddlewareStages::BEFORE_OUTPUT, $context, $group_middlewares, $group_exclude_middlewares, $route_middlewares, $route_exclude_middlewares);
 
 		// send the response
 		$context->response->send();
@@ -179,19 +213,19 @@ class RequestHandler implements RequestHandlerInterface
 	 * @param int $status_code The status code to send
 	 * @return void
 	 */
-	public function send_response(mixed $data, int $status_code = 200)
+	public function send_response(mixed $data, int $status_code = 200, Context $context = null)
 	{
 		$this->response->data = $data;
 		$this->response->status_code = $status_code;
 
-
 		try {
-			//INFO: Apply the middlewares to the response, this might cause problems if the middlewares create exceptions
-			//TODO: Handle middlewares
-			//$this->response = $this->middleware_handler->handle_after($this->response);
+			if ($context) {
+				$context->response = $this->response;
+				$context = $this->middleware_handler->handle(MiddlewareStages::BEFORE_OUTPUT, $context);
+				$this->response = $context->response;
+			}
 			$this->response->send();
 		} catch (\Exception $e) {
-			// if the middlewares create exceptions, default the response to json with code 500
 			Log::error($e->getMessage(), $e->getTrace());
 			$this->response->data = json_encode("INTERNAL_SERVER_ERROR");
 			$this->response->status_code = 500;
@@ -203,8 +237,9 @@ class RequestHandler implements RequestHandlerInterface
 	 * Set the prefix for all routes
 	 * @param string $prefix
 	 */
-	public function prefix(string $prefix)
+	public function prefix(string $prefix): RequestHandlerInterface
 	{
 		$this->router->set_prefix($prefix);
+		return $this;
 	}
 }

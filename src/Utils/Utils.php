@@ -306,4 +306,21 @@ class Utils
 			return false;
 		}
 	}
+	/**
+	 * Exclude middlewares from an array of middlewares
+	 * @param array $middlewares
+	 * @param array $excluded_class_names
+	 * @return array
+	 */
+	public static function exclude_middlewares(array $middlewares, array $excluded_class_names): array
+	{
+		return array_filter($middlewares, function ($middleware) use ($excluded_class_names) {
+			foreach ($excluded_class_names as $excluded_class) {
+				if ($middleware instanceof $excluded_class) {
+					return false; 
+				}
+			}
+			return true; 
+		});
+	}
 }

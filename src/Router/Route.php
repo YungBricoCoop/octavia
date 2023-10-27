@@ -8,7 +8,7 @@ use ybc\octavia\Router\RouteTypes\RouteType;
 
 use ybc\octavia\{WrongPathParameterTypeException, MissingBodyParameterException, MissingQueryParameterException, WrongQueryParameterTypeException, MissingObjectPropertyException, WrongObjectPropertyTypeException};
 use ybc\octavia\Middleware\{Middleware, MiddlewareIdentifier};
-use ybc\octavia\Enums\MiddlewareStages;
+use ybc\octavia\Enums\MiddlewareScopes;
 
 class Route implements RouteInterface
 {
@@ -25,10 +25,8 @@ class Route implements RouteInterface
 	public bool $requires_login;
 	public bool $requires_admin;
 	public bool $return_html;
-	public $middlewares = [
-		MiddlewareStages::AFTER_ROUTING->value => [],
-		MiddlewareStages::BEFORE_OUTPUT->value => [],
-	];
+	public $middlewares;
+	public $no_middlewares;
 
 	public function __construct($name, $type, $path, $path_segments, $dynamic_segments_types, $func)
 	{
@@ -42,55 +40,96 @@ class Route implements RouteInterface
 		$this->requires_admin = false;
 		$this->return_html = false;
 		$this->func = $func;
+		$this->middlewares = [];
+		$this->no_middlewares = [];
 
 		$this->query = new Query();
 		$this->body = new Body();
 		$this->upload = new Upload();
 	}
 
-	public function login(): self
+	public function login(): RouteInterface
 	{
 		$this->requires_login = true;
 		return $this;
 	}
 
-	public function admin(): self
+	public function admin(): RouteInterface
 	{
 		$this->requires_admin = true;
 		return $this;
 	}
 
-	public function query($params): self
+	public function query($params): RouteInterface
 	{
 		$this->query->set_required_params($params);
 		return $this;
 	}
 
-	public function q($params): self
+	public function q($params): RouteInterface
 	{
 		$this->query->set_required_params($params);
 		return $this;
 	}
 
-	public function body($params): self
+	public function body($params): RouteInterface
 	{
 		$this->body->set_required_body($params);
 		return $this;
 	}
 
-	public function b($params): self
+	public function b($params): RouteInterface
 	{
 		$this->body->set_required_body($params);
 		return $this;
 	}
 
-	public function f($func): self
+	public function f($func): RouteInterface
 	{
 		$this->func = $func;
 		return $this;
 	}
 
-	public function __call($middleware_identifier, $arguments)
+	/**
+	 * Register one or multiple middlewares
+	 * @param Middleware|Middleware[] $middleware
+	 * @return Route
+	 */
+	public function add($middleware): RouteInterface
+	{
+		if (!is_array($middleware)) {
+			$middleware->scope = MiddlewareScopes::ROUTE;
+			$this->middlewares[$middleware->stage->value][] = $middleware;
+			return $this;
+		}
+
+		foreach ($middleware as $m) {
+			$m->scope = MiddlewareScopes::ROUTE;
+			$this->middlewares[$m->stage->value][] = $m;
+		}
+		return $this;
+	}
+
+	/**
+	 * Register one or multiple middleware class names that should not be applied to the route
+	 * @param string|string[] $middleware Middleware class name(s)
+	 * @return Route
+	 */
+	public function no($middleware): RouteInterface
+	{
+		if (!is_array($middleware)) {
+			$this->no_middlewares[] = $middleware;
+			return $this;
+		}
+
+		foreach ($middleware as $m) {
+			$this->no_middlewares[] = $m;
+		}
+		return $this;
+	}
+
+
+	/* 	public function __call($middleware_identifier, $arguments)
 	{
 		$middleware_class = $this->find_middleware_with_identifier($middleware_identifier);
 		if (!$middleware_class) {
@@ -102,7 +141,7 @@ class Route implements RouteInterface
 		}
 		$this->add_middleware($middleware);
 		return $this;
-	}
+	} 
 
 	private function add_middleware(Middleware $middleware)
 	{
@@ -119,7 +158,7 @@ class Route implements RouteInterface
 			}
 		}
 		return null;
-	}
+	}*/
 
 	public function handle()
 	{
