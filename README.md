@@ -161,6 +161,7 @@ Here is more examples:
 -   [Upload](examples/upload) - Showcase how to upload files.
 -   [Health](examples/health) - Showcase how to use the health check endpoint.
 -   [OAuth](examples/oauth) - Showcase how to use the Google OAuth.
+-   [Middlewares/Templating](examples/middlewares) - Showcase how to use middlewares and the template engine.
 
 ## 📝 Todo
 
