@@ -189,3 +189,13 @@ class ErrorPromptingGoogleOAuthException extends CustomException
 		return "ERROR_PROMPTING_GOOGLE_OAUTH";
 	}
 }
+
+class RateLimitExceededException extends CustomException
+{
+	protected $status_code = 429;
+
+	protected function get_msg()
+	{
+		return "RATE_LIMIT_EXCEEDED";
+	}
+}

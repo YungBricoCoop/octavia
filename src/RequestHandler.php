@@ -99,30 +99,17 @@ class RequestHandler implements RequestHandlerInterface
 			$this->handle_request_with_exception();
 		} catch (CustomException $e) {
 			if ($e->getDetail()) {
+				//TODO: Log the method and ip
 				Log::error($e->getMessage() . "(" . $e->getDetail() . ")", $e->getTrace());
+			} else {
+				Log::error($e->getMessage(), $e->getTrace());
 			}
 			$context = new Context(new Request(), $this->current_route, $this->response);
 
-			if ($this->current_group && $this->current_route) {
-				$group_middlewares = $this->current_group->middlewares;
-				$group_exclude_middlewares = $this->current_group->no_middlewares;
-				$route_middlewares = $this->current_route->middlewares;
-				$route_exclude_middlewares = $this->current_route->no_middlewares;
-
-				$context = $this->middleware_handler->handle(
-					MiddlewareStages::BEFORE_OUTPUT,
-					$context,
-					$group_middlewares,
-					$group_exclude_middlewares,
-					$route_middlewares,
-					$route_exclude_middlewares
-				);
-			} else {
-				$context = $this->middleware_handler->handle(MiddlewareStages::BEFORE_OUTPUT, $context);
-			}
 			$this->send_response($e->getMessage(), $e->getCode(), $context);
 		} catch (\Exception $e) {
-			// ... (similar adjustments as above)
+			Log::error($e->getMessage(), $e->getTrace());
+			$this->send_response($e->getMessage(), $e->getCode());
 		}
 	}
 
@@ -221,7 +208,24 @@ class RequestHandler implements RequestHandlerInterface
 		try {
 			if ($context) {
 				$context->response = $this->response;
-				$context = $this->middleware_handler->handle(MiddlewareStages::BEFORE_OUTPUT, $context);
+
+				// Apply middleware only if there are specific middlewares for the route or group.
+				if ($this->current_group && $this->current_route) {
+					$group_middlewares = $this->current_group->middlewares;
+					$group_exclude_middlewares = $this->current_group->no_middlewares;
+					$route_middlewares = $this->current_route->middlewares;
+					$route_exclude_middlewares = $this->current_route->no_middlewares;
+
+					$context = $this->middleware_handler->handle(
+						MiddlewareStages::BEFORE_OUTPUT,
+						$context,
+						$group_middlewares,
+						$group_exclude_middlewares,
+						$route_middlewares,
+						$route_exclude_middlewares
+					);
+				}
+
 				$this->response = $context->response;
 			}
 			$this->response->send();

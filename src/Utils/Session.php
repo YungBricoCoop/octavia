@@ -47,6 +47,17 @@ class Session
 	}
 
 	/**
+	 * Check if a session variable exists
+	 * @param string $key
+	 * @example $session->exists('user');
+	 * @return bool
+	 */
+	public function exists(string $key)
+	{
+		return isset($_SESSION[$key]);
+	}
+
+	/**
 	 * Remove a session variable
 	 * @param string $key
 	 * @example $session->remove('user');
