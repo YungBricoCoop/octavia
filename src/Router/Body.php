@@ -41,7 +41,10 @@ class Body
 			if ($result["is_wrong_type"]) {
 				throw new WrongObjectPropertyTypeException($result["property"] . ", expected {" . $result["expected_type"] . "} but got {" . $result["actual_type"] . "}");
 			}
+
+			return true;
 		}
+
 
 		//FIXME: This might not work with mixed arrays, or with simple arrays
 		foreach ($required as $key => $value) {

@@ -145,13 +145,13 @@ class RequestHandler implements RequestHandlerInterface
 
 		Log::info("[$request->method] $route->path ($ip)");
 
+		$context = $this->middleware_handler->handle(MiddlewareStages::AFTER_ROUTING, $context, $group_middlewares, $group_exclude_middlewares, $route_middlewares, $route_exclude_middlewares);
+
 		// set the query, body and files
 		$route->query->set_data($context->request->query_params);
 		$route->body->set_data($context->request->body);
 		$route->upload->set_files($context->request->files);
-
 		$context->route = $route;
-		$context = $this->middleware_handler->handle(MiddlewareStages::AFTER_ROUTING, $context, $group_middlewares, $group_exclude_middlewares, $route_middlewares, $route_exclude_middlewares);
 
 		// check if the user is logged in and if the user is allowed to access the route
 		if ($route->requires_login && !$this->session->is_logged()) {
